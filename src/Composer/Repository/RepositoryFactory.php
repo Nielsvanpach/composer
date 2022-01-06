@@ -126,7 +126,6 @@ class RepositoryFactory
         $rm->setRepositoryClass('composer', ComposerRepository::class);
         $rm->setRepositoryClass('vcs', VcsRepository::class);
         $rm->setRepositoryClass('package', PackageRepository::class);
-        $rm->setRepositoryClass('pear', PearRepository::class);
         $rm->setRepositoryClass('git', VcsRepository::class);
         $rm->setRepositoryClass('bitbucket', VcsRepository::class);
         $rm->setRepositoryClass('git-bitbucket', VcsRepository::class);
