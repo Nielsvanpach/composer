@@ -12,6 +12,8 @@
 
 namespace Composer;
 
+use ErrorException;
+use DateTime;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
@@ -152,7 +154,7 @@ class Cache
             $tempFileName = $this->root . $file . uniqid('.', true) . '.tmp';
             try {
                 return file_put_contents($tempFileName, $contents) !== false && rename($tempFileName, $this->root . $file);
-            } catch (\ErrorException $e) {
+            } catch (ErrorException $e) {
                 $this->io->writeError('<warning>Failed to write into cache: '.$e->getMessage().'</warning>', true, IOInterface::DEBUG);
                 if (Preg::isMatch('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
                     // Remove partial file.
@@ -219,7 +221,7 @@ class Cache
             if (file_exists($this->root . $file)) {
                 try {
                     touch($this->root . $file, (int) filemtime($this->root . $file), time());
-                } catch (\ErrorException $e) {
+                } catch (ErrorException $e) {
                     // fallback in case the above failed due to incorrect ownership
                     // see https://github.com/composer/composer/issues/4070
                     Silencer::call('touch', $this->root . $file);
@@ -308,7 +310,7 @@ class Cache
     public function gc($ttl, $maxSize)
     {
         if ($this->isEnabled()) {
-            $expire = new \DateTime();
+            $expire = new DateTime();
             $expire->modify('-'.$ttl.' seconds');
 
             $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));

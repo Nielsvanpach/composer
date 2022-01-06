@@ -12,6 +12,7 @@
 
 namespace Composer\Package;
 
+use DateTime;
 use Composer\Repository\RepositoryInterface;
 
 /**
@@ -232,7 +233,7 @@ interface PackageInterface
     /**
      * Returns the release date of the package
      *
-     * @return ?\DateTime
+     * @return ?DateTime
      */
     public function getReleaseDate();
 

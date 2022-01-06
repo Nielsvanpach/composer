@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use SplQueue;
+use LogicException;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
@@ -167,8 +169,8 @@ class RuleSetGenerator
      */
     protected function addRulesForPackage(BasePackage $package, PlatformRequirementFilterInterface $platformRequirementFilter)
     {
-        /** @var \SplQueue<BasePackage> */
-        $workQueue = new \SplQueue;
+        /** @var SplQueue<BasePackage> */
+        $workQueue = new SplQueue;
         $workQueue->enqueue($package);
 
         while (!$workQueue->isEmpty()) {
@@ -270,7 +272,7 @@ class RuleSetGenerator
                 }
 
                 // otherwise, looks like a bug
-                throw new \LogicException("Fixed package ".$package->getPrettyString()." was not added to solver pool.");
+                throw new LogicException("Fixed package ".$package->getPrettyString()." was not added to solver pool.");
             }
 
             $this->addRulesForPackage($package, $platformRequirementFilter);

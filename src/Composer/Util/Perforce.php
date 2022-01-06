@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use Exception;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Symfony\Component\Process\Process;
@@ -412,9 +413,9 @@ class Perforce
                 if ($index === false) {
                     return false;
                 }
-                throw new \Exception('p4 command not found in path: ' . $errorOutput);
+                throw new Exception('p4 command not found in path: ' . $errorOutput);
             }
-            throw new \Exception('Invalid user name: ' . $this->getUser());
+            throw new Exception('Invalid user name: ' . $this->getUser());
         }
 
         return true;
@@ -485,7 +486,7 @@ class Perforce
         $spec = fopen($clientSpec, 'w');
         try {
             $this->writeClientSpecToFile($spec);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             fclose($spec);
             throw $e;
         }
@@ -537,7 +538,7 @@ class Perforce
                 $command = 'echo ' . ProcessExecutor::escape($password)  . ' | ' . $this->generateP4Command(' login -a', false);
                 $exitCode = $this->executeCommand($command);
                 if ($exitCode) {
-                    throw new \Exception("Error logging in:" . $this->process->getErrorOutput());
+                    throw new Exception("Error logging in:" . $this->process->getErrorOutput());
                 }
             }
         }

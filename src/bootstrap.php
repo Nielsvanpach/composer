@@ -1,5 +1,6 @@
 <?php
 
+use Composer\Autoload\ClassLoader;
 /*
  * This file is part of Composer.
  *
@@ -9,10 +10,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 /**
  * @param string $file
- * @return ?\Composer\Autoload\ClassLoader
+ * @return ?ClassLoader
  */
 function includeIfExists($file)
 {

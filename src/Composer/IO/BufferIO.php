@@ -12,6 +12,7 @@
 
 namespace Composer\IO;
 
+use RuntimeException;
 use Composer\Pcre\Preg;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Output\StreamOutput;
@@ -80,7 +81,7 @@ class BufferIO extends ConsoleIO
     public function setUserInputs(array $inputs)
     {
         if (!$this->input instanceof StreamableInputInterface) {
-            throw new \RuntimeException('Setting the user inputs requires at least the version 3.2 of the symfony/console component.');
+            throw new RuntimeException('Setting the user inputs requires at least the version 3.2 of the symfony/console component.');
         }
 
         $this->input->setStream($this->createStream($inputs));

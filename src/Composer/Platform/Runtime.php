@@ -12,6 +12,9 @@
 
 namespace Composer\Platform;
 
+use ReflectionException;
+use ReflectionClass;
+use ReflectionExtension;
 class Runtime
 {
     /**
@@ -72,7 +75,7 @@ class Runtime
      * @param mixed[] $arguments
      *
      * @return object
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function construct($class, array $arguments = array())
     {
@@ -80,7 +83,7 @@ class Runtime
             return new $class;
         }
 
-        $refl = new \ReflectionClass($class);
+        $refl = new ReflectionClass($class);
 
         return $refl->newInstanceArgs($arguments);
     }
@@ -105,11 +108,11 @@ class Runtime
      * @param string $extension
      *
      * @return string
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function getExtensionInfo($extension)
     {
-        $reflector = new \ReflectionExtension($extension);
+        $reflector = new ReflectionExtension($extension);
 
         ob_start();
         $reflector->info();

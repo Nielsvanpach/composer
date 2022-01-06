@@ -2,6 +2,7 @@
 
 namespace Composer\Filter\PlatformRequirementFilter;
 
+use InvalidArgumentException;
 final class PlatformRequirementFilterFactory
 {
     /**
@@ -19,7 +20,7 @@ final class PlatformRequirementFilterFactory
             return new IgnoreListPlatformRequirementFilter($boolOrList);
         }
 
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             sprintf(
                 'PlatformRequirementFilter: Unknown $boolOrList parameter %s. Please report at https://github.com/composer/composer/issues/new.',
                 gettype($boolOrList)

@@ -12,6 +12,8 @@
 
 namespace Composer\Command;
 
+use UnexpectedValueException;
+use Seld\JsonLint\ParsingException;
 use Composer\Config\JsonConfigSource;
 use Composer\DependencyResolver\Request;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
@@ -83,7 +85,7 @@ EOT
             $composer = $this->getComposer();
             $locker = $composer->getLocker();
             if (!$locker->isLocked()) {
-                throw new \UnexpectedValueException('A valid composer.lock file is required to run this command with --unused');
+                throw new UnexpectedValueException('A valid composer.lock file is required to run this command with --unused');
             }
 
             $lockedPackages = $locker->getLockedRepository()->getPackages();
@@ -126,7 +128,7 @@ EOT
 
     /**
      * @return int
-     * @throws \Seld\JsonLint\ParsingException
+     * @throws ParsingException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {

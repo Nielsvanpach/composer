@@ -12,6 +12,8 @@
 
 namespace Composer\Installer;
 
+use InvalidArgumentException;
+use function React\Promise\resolve;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 
@@ -45,7 +47,7 @@ class NoopInstaller implements InstallerInterface
      */
     public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -53,7 +55,7 @@ class NoopInstaller implements InstallerInterface
      */
     public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -61,7 +63,7 @@ class NoopInstaller implements InstallerInterface
      */
     public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -73,7 +75,7 @@ class NoopInstaller implements InstallerInterface
             $repo->addPackage(clone $package);
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -82,7 +84,7 @@ class NoopInstaller implements InstallerInterface
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         if (!$repo->hasPackage($initial)) {
-            throw new \InvalidArgumentException('Package is not installed: '.$initial);
+            throw new InvalidArgumentException('Package is not installed: '.$initial);
         }
 
         $repo->removePackage($initial);
@@ -90,7 +92,7 @@ class NoopInstaller implements InstallerInterface
             $repo->addPackage(clone $target);
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -99,11 +101,11 @@ class NoopInstaller implements InstallerInterface
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (!$repo->hasPackage($package)) {
-            throw new \InvalidArgumentException('Package is not installed: '.$package);
+            throw new InvalidArgumentException('Package is not installed: '.$package);
         }
         $repo->removePackage($package);
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**

@@ -12,6 +12,11 @@
 
 namespace Composer\Util;
 
+use RuntimeException;
+use UnexpectedValueException;
+use InvalidArgumentException;
+use LogicException;
+use function React\Promise\resolve;
 use Composer\Pcre\Preg;
 use React\Promise\PromiseInterface;
 use RecursiveDirectoryIterator;
@@ -104,7 +109,7 @@ class Filesystem
      * installation.
      *
      * @param  string            $directory
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return bool
      */
     public function removeDirectory($directory)
@@ -139,14 +144,14 @@ class Filesystem
      * installation.
      *
      * @param  string            $directory
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return PromiseInterface
      */
     public function removeDirectoryAsync($directory)
     {
         $edgeCaseResult = $this->removeEdgeCases($directory);
         if ($edgeCaseResult !== null) {
-            return \React\Promise\resolve($edgeCaseResult);
+            return resolve($edgeCaseResult);
         }
 
         if (Platform::isWindows()) {
@@ -163,11 +168,11 @@ class Filesystem
 
             if ($process->isSuccessful()) {
                 if (!is_dir($directory)) {
-                    return \React\Promise\resolve(true);
+                    return resolve(true);
                 }
             }
 
-            return \React\Promise\resolve($this->removeDirectoryPhp($directory));
+            return resolve($this->removeDirectoryPhp($directory));
         });
     }
 
@@ -196,7 +201,7 @@ class Filesystem
         }
 
         if (Preg::isMatch('{^(?:[a-z]:)?[/\\\\]+$}i', $directory)) {
-            throw new \RuntimeException('Aborting an attempted deletion of '.$directory.', this was probably not intended, if it is a real use case please report it.');
+            throw new RuntimeException('Aborting an attempted deletion of '.$directory.', this was probably not intended, if it is a real use case please report it.');
         }
 
         if (!\function_exists('proc_open') && $fallbackToPhp) {
@@ -225,7 +230,7 @@ class Filesystem
 
         try {
             $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
-        } catch (\UnexpectedValueException $e) {
+        } catch (UnexpectedValueException $e) {
             // re-try once after clearing the stat cache if it failed as it
             // sometimes fails without apparent reason, see https://github.com/composer/composer/issues/4009
             clearstatcache();
@@ -260,12 +265,12 @@ class Filesystem
     {
         if (!is_dir($directory)) {
             if (file_exists($directory)) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     $directory.' exists and is not a directory.'
                 );
             }
             if (!@mkdir($directory, 0777, true)) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     $directory.' does not exist and could not be created.'
                 );
             }
@@ -276,7 +281,7 @@ class Filesystem
      * Attempts to unlink a file and in case of failure retries after 350ms on windows
      *
      * @param  string            $path
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return bool
      */
     public function unlink($path)
@@ -296,7 +301,7 @@ class Filesystem
                     $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
                 }
 
-                throw new \RuntimeException($message);
+                throw new RuntimeException($message);
             }
         }
 
@@ -307,7 +312,7 @@ class Filesystem
      * Attempts to rmdir a file and in case of failure retries after 350ms on windows
      *
      * @param  string            $path
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return bool
      */
     public function rmdir($path)
@@ -327,7 +332,7 @@ class Filesystem
                     $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
                 }
 
-                throw new \RuntimeException($message);
+                throw new RuntimeException($message);
             }
         }
 
@@ -442,13 +447,13 @@ class Filesystem
      * @param  string                    $from
      * @param  string                    $to
      * @param  bool                      $directories if true, the source/target are considered to be directories
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return string
      */
     public function findShortestPath($from, $to, $directories = false)
     {
         if (!$this->isAbsolutePath($from) || !$this->isAbsolutePath($to)) {
-            throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
+            throw new InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
         }
 
         $from = lcfirst($this->normalizePath($from));
@@ -485,13 +490,13 @@ class Filesystem
      * @param  string                    $to
      * @param  bool                      $directories if true, the source/target are considered to be directories
      * @param  bool                      $staticCode
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return string
      */
     public function findShortestPathCode($from, $to, $directories = false, $staticCode = false)
     {
         if (!$this->isAbsolutePath($from) || !$this->isAbsolutePath($to)) {
-            throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
+            throw new InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
         }
 
         $from = lcfirst($this->normalizePath($from));
@@ -541,13 +546,13 @@ class Filesystem
      * given, its size will be computed recursively.
      *
      * @param  string            $path Path to the file or directory
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return int
      */
     public function size($path)
     {
         if (!file_exists($path)) {
-            throw new \RuntimeException("$path does not exist.");
+            throw new RuntimeException("$path does not exist.");
         }
         if (is_dir($path)) {
             return $this->directorySize($path);
@@ -807,7 +812,7 @@ class Filesystem
     public function junction($target, $junction)
     {
         if (!Platform::isWindows()) {
-            throw new \LogicException(sprintf('Function %s is not available on non-Windows platform', __CLASS__));
+            throw new LogicException(sprintf('Function %s is not available on non-Windows platform', __CLASS__));
         }
         if (!is_dir($target)) {
             throw new IOException(sprintf('Cannot junction to "%s" as it is not a directory.', $target), 0, null, $target);

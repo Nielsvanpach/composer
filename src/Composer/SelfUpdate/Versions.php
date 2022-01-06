@@ -12,6 +12,8 @@
 
 namespace Composer\SelfUpdate;
 
+use InvalidArgumentException;
+use UnexpectedValueException;
 use Composer\Util\HttpDownloader;
 use Composer\Config;
 
@@ -66,7 +68,7 @@ class Versions
     public function setChannel($channel)
     {
         if (!in_array($channel, self::$channels, true)) {
-            throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::$channels));
+            throw new InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::$channels));
         }
 
         $channelFile = $this->config->get('home').'/update-channel';
@@ -89,7 +91,7 @@ class Versions
             }
         }
 
-        throw new \UnexpectedValueException('There is no version of Composer available for your PHP version ('.PHP_VERSION.')');
+        throw new UnexpectedValueException('There is no version of Composer available for your PHP version ('.PHP_VERSION.')');
     }
 
     /**

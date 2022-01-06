@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use RuntimeException;
 use Composer\Composer;
 use Composer\CaBundle\CaBundle;
 use Composer\Downloader\TransportException;
@@ -34,7 +35,7 @@ final class StreamContextFactory
      * @phpstan-param array{http?: array{follow_location?: int, max_redirects?: int, header?: string|array<string>}} $defaultOptions
      * @param  mixed[]           $defaultOptions Options to merge with the default
      * @param  mixed[]           $defaultParams  Parameters to specify on the context
-     * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
+     * @throws RuntimeException if https proxy required and OpenSSL uninstalled
      * @return resource          Default context
      */
     public static function getContext($url, array $defaultOptions = array(), array $defaultParams = array())

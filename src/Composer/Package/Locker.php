@@ -12,6 +12,10 @@
 
 namespace Composer\Package;
 
+use RuntimeException;
+use LogicException;
+use DateTime;
+use DateTimeZone;
 use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
 use Composer\Pcre\Preg;
@@ -153,8 +157,8 @@ class Locker
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
      * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
-     * @throws \RuntimeException
-     * @return \Composer\Repository\LockArrayRepository
+     * @throws RuntimeException
+     * @return LockArrayRepository
      */
     public function getLockedRepository($withDevReqs = false)
     {
@@ -166,7 +170,7 @@ class Locker
             if (isset($lockData['packages-dev'])) {
                 $lockedPackages = array_merge($lockedPackages, $lockData['packages-dev']);
             } else {
-                throw new \RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or delete it and run composer update to generate a new lock file.');
+                throw new RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or delete it and run composer update to generate a new lock file.');
             }
         }
 
@@ -199,7 +203,7 @@ class Locker
             return $packages;
         }
 
-        throw new \RuntimeException('Your composer.lock is invalid. Run "composer update" to generate a new one.');
+        throw new RuntimeException('Your composer.lock is invalid. Run "composer update" to generate a new one.');
     }
 
     /**
@@ -222,7 +226,7 @@ class Locker
      * Returns the platform requirements stored in the lock file
      *
      * @param  bool                     $withDevReqs if true, the platform requirements from the require-dev block are also returned
-     * @return \Composer\Package\Link[]
+     * @return Link[]
      */
     public function getPlatformRequirements($withDevReqs = false)
     {
@@ -328,7 +332,7 @@ class Locker
         }
 
         if (!$this->lockFile->exists()) {
-            throw new \LogicException('No lockfile found. Unable to read locked packages');
+            throw new LogicException('No lockfile found. Unable to read locked packages');
         }
 
         return $this->lockDataCache = $this->lockFile->read();
@@ -432,7 +436,7 @@ class Locker
             $version = $package->getPrettyVersion();
 
             if (!$name || !$version) {
-                throw new \LogicException(sprintf(
+                throw new LogicException(sprintf(
                     'Package "%s" has no version or name and can not be locked',
                     $package
                 ));
@@ -494,13 +498,13 @@ class Locker
                     GitUtil::cleanEnv();
 
                     if (0 === $this->process->execute('git log -n1 --pretty=%ct '.ProcessExecutor::escape($sourceRef).GitUtil::getNoShowSignatureFlag($this->process), $output, $path) && Preg::isMatch('{^\s*\d+\s*$}', $output)) {
-                        $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
+                        $datetime = new DateTime('@'.trim($output), new DateTimeZone('UTC'));
                     }
                     break;
 
                 case 'hg':
                     if (0 === $this->process->execute('hg log --template "{date|hgdate}" -r '.ProcessExecutor::escape($sourceRef), $output, $path) && Preg::isMatch('{^\s*(\d+)\s*}', $output, $match)) {
-                        $datetime = new \DateTime('@'.$match[1], new \DateTimeZone('UTC'));
+                        $datetime = new DateTime('@'.$match[1], new DateTimeZone('UTC'));
                     }
                     break;
             }

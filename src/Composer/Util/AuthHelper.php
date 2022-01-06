@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use RuntimeException;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
@@ -55,7 +56,7 @@ class AuthHelper
                     if (in_array($input, array('y','n'))) {
                         return $input;
                     }
-                    throw new \RuntimeException('Please answer (y)es or (n)o');
+                    throw new RuntimeException('Please answer (y)es or (n)o');
                 },
                 null,
                 'y'

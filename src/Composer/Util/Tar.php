@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use PharData;
+use RuntimeException;
 /**
  * @author Wissem Riahi <wissemr@gmail.com>
  */
@@ -24,7 +26,7 @@ class Tar
      */
     public static function getComposerJson($pathToArchive)
     {
-        $phar = new \PharData($pathToArchive);
+        $phar = new PharData($pathToArchive);
 
         if (!$phar->valid()) {
             return null;
@@ -34,13 +36,13 @@ class Tar
     }
 
     /**
-     * @param \PharData $phar
+     * @param PharData $phar
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      *
      * @return string
      */
-    private static function extractComposerJsonFromFolder(\PharData $phar)
+    private static function extractComposerJsonFromFolder(PharData $phar)
     {
         if (isset($phar['composer.json'])) {
             return $phar['composer.json']->getContent();
@@ -53,7 +55,7 @@ class Tar
             if ($folderFile->isDir()) {
                 $topLevelPaths[$name] = true;
                 if (\count($topLevelPaths) > 1) {
-                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
+                    throw new RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
                 }
             }
         }
@@ -63,6 +65,6 @@ class Tar
             return $phar[$composerJsonPath]->getContent();
         }
 
-        throw new \RuntimeException('No composer.json found either at the top level or within the topmost directory');
+        throw new RuntimeException('No composer.json found either at the top level or within the topmost directory');
     }
 }

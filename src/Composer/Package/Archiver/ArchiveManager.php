@@ -12,6 +12,9 @@
 
 namespace Composer\Package\Archiver;
 
+use InvalidArgumentException;
+use RuntimeException;
+use Exception;
 use Composer\Downloader\DownloadManager;
 use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
@@ -117,14 +120,14 @@ class ArchiveManager
      * @param  string|null               $fileName      The relative file name to use for the archive, or null to generate
      *                                                  the package name. Note that the format will be appended to this name
      * @param  bool                      $ignoreFilters Ignore filters when looking for files in the package
-     * @throws \InvalidArgumentException
-     * @throws \RuntimeException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
      * @return string                    The path of the created archive
      */
     public function archive(CompletePackageInterface $package, $format, $targetDir, $fileName = null, $ignoreFilters = false)
     {
         if (empty($format)) {
-            throw new \InvalidArgumentException('Format must be specified');
+            throw new InvalidArgumentException('Format must be specified');
         }
 
         // Search for the most appropriate archiver
@@ -138,7 +141,7 @@ class ArchiveManager
 
         // Checks the format/source type are supported before downloading the package
         if (null === $usableArchiver) {
-            throw new \RuntimeException(sprintf('No archiver found to support %s format', $format));
+            throw new RuntimeException(sprintf('No archiver found to support %s format', $format));
         }
 
         $filesystem = new Filesystem();
@@ -156,7 +159,7 @@ class ArchiveManager
                 SyncHelper::await($this->loop, $promise);
                 $promise = $this->downloadManager->install($package, $sourcePath);
                 SyncHelper::await($this->loop, $promise);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $filesystem->removeDirectory($sourcePath);
                 throw  $e;
             }

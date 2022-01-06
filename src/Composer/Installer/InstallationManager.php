@@ -12,6 +12,10 @@
 
 namespace Composer\Installer;
 
+use InvalidArgumentException;
+use React\Promise\Promise;
+use Exception;
+use function React\Promise\resolve;
 use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Package\PackageInterface;
@@ -122,7 +126,7 @@ class InstallationManager
      *
      * @param string $type package type
      *
-     * @throws \InvalidArgumentException if installer for provided type is not registered
+     * @throws InvalidArgumentException if installer for provided type is not registered
      * @return InstallerInterface
      */
     public function getInstaller($type)
@@ -139,7 +143,7 @@ class InstallationManager
             }
         }
 
-        throw new \InvalidArgumentException('Unknown installer type: '.$type);
+        throw new InvalidArgumentException('Unknown installer type: '.$type);
     }
 
     /**
@@ -171,7 +175,7 @@ class InstallationManager
     {
         try {
             $installer = $this->getInstaller($package->getType());
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             // no installer found for the current package type (@see `getInstaller()`)
             return;
         }
@@ -205,7 +209,7 @@ class InstallationManager
             $loop->abortJobs();
 
             foreach ($cleanupPromises as $cleanup) {
-                $promises[] = new \React\Promise\Promise(function ($resolve, $reject) use ($cleanup) {
+                $promises[] = new Promise(function ($resolve, $reject) use ($cleanup) {
                     $promise = $cleanup();
                     if (!$promise instanceof PromiseInterface) {
                         $resolve();
@@ -281,7 +285,7 @@ class InstallationManager
             foreach ($batches as $batch) {
                 $this->downloadAndExecuteBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts, $operations);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $runCleanup();
 
             if ($handleInterruptsUnix) {
@@ -440,7 +444,7 @@ class InstallationManager
 
             $promise = $installer->prepare($opType, $package, $initialPackage);
             if (!$promise instanceof PromiseInterface) {
-                $promise = \React\Promise\resolve();
+                $promise = resolve();
             }
 
             $promise = $promise->then(function () use ($opType, $repo, $operation) {
@@ -544,7 +548,7 @@ class InstallationManager
         } else {
             $promise = $this->getInstaller($initialType)->uninstall($repo, $initial);
             if (!$promise instanceof PromiseInterface) {
-                $promise = \React\Promise\resolve();
+                $promise = resolve();
             }
 
             $installer = $this->getInstaller($targetType);
@@ -691,7 +695,7 @@ class InstallationManager
             }
 
             $this->loop->wait($promises);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         $this->reset();

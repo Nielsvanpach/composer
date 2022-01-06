@@ -12,6 +12,9 @@
 
 namespace Composer\Util;
 
+use LogicException;
+use RuntimeException;
+use Exception;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
@@ -105,7 +108,7 @@ class Bitbucket
 
             $token = $response->decodeJson();
             if (!isset($token['expires_in']) || !isset($token['access_token'])) {
-                throw new \LogicException('Expected a token configured with expires_in and access_token present, got '.json_encode($token));
+                throw new LogicException('Expected a token configured with expires_in and access_token present, got '.json_encode($token));
             }
 
             $this->token = $token;
@@ -136,8 +139,8 @@ class Bitbucket
      *
      * @param  string                        $originUrl The host this Bitbucket instance is located at
      * @param  string                        $message   The reason this authorization is required
-     * @throws \RuntimeException
-     * @throws TransportException|\Exception
+     * @throws RuntimeException
+     * @throws TransportException|Exception
      * @return bool                          true on success
      */
     public function authorizeOAuthInteractively($originUrl, $message = null)
@@ -208,7 +211,7 @@ class Bitbucket
         $this->storeInAuthConfig($originUrl, $consumerKey, $consumerSecret);
 
         if (!isset($this->token['access_token'])) {
-            throw new \LogicException('Failed to initialize token above');
+            throw new LogicException('Failed to initialize token above');
         }
 
         return $this->token['access_token'];
@@ -228,7 +231,7 @@ class Bitbucket
         $this->config->getConfigSource()->removeConfigSetting('bitbucket-oauth.'.$originUrl);
 
         if (null === $this->token || !isset($this->token['expires_in'])) {
-            throw new \LogicException('Expected a token configured with expires_in present, got '.json_encode($this->token));
+            throw new LogicException('Expected a token configured with expires_in present, got '.json_encode($this->token));
         }
 
         $time = null === $this->time ? time() : $this->time;

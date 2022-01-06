@@ -12,6 +12,8 @@
 
 namespace Composer\EventDispatcher;
 
+use RuntimeException;
+use Exception;
 use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
@@ -156,7 +158,7 @@ class EventDispatcher
      * Triggers the listeners of an event.
      *
      * @param  Event                        $event The event object to pass to the event handlers/listeners.
-     * @throws \RuntimeException|\Exception
+     * @throws RuntimeException|Exception
      * @return int                          return code of the executed script if any, for php scripts a false return
      *                                            value is changed to 1, anything else to 0
      */
@@ -184,7 +186,7 @@ class EventDispatcher
                     if (!is_callable($callable)) {
                         $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
 
-                        throw new \RuntimeException('Subscriber '.$className.'::'.$callable[1].' for event '.$event->getName().' is not callable, make sure the function is defined and public');
+                        throw new RuntimeException('Subscriber '.$className.'::'.$callable[1].' for event '.$event->getName().' is not callable, make sure the function is defined and public');
                     }
                     if (is_array($callable) && (is_string($callable[0]) || is_object($callable[0])) && is_string($callable[1])) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1]), true, IOInterface::VERBOSE);
@@ -236,13 +238,13 @@ class EventDispatcher
 
                     try {
                         $return = false === $this->executeEventPhpScript($className, $methodName, $event) ? 1 : 0;
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $message = "Script %s handling the %s event terminated with an exception";
                         $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
                         throw $e;
                     }
                 } else {
-                    $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
+                    $args = implode(' ', array_map(array(ProcessExecutor::class, 'escape'), $event->getArguments()));
                     $exec = $callable . ($args === '' ? '' : ' '.$args);
                     if ($this->io->isVerbose()) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
@@ -352,7 +354,7 @@ class EventDispatcher
         $finder = new PhpExecutableFinder();
         $phpPath = $finder->find(false);
         if (!$phpPath) {
-            throw new \RuntimeException('Failed to locate PHP binary to execute '.$phpPath);
+            throw new RuntimeException('Failed to locate PHP binary to execute '.$phpPath);
         }
         $phpArgs = $finder->findArguments();
         $phpArgs = $phpArgs ? ' ' . implode(' ', $phpArgs) : '';
@@ -530,14 +532,14 @@ class EventDispatcher
      * Push an event to the stack of active event
      *
      * @param  Event             $event
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return int
      */
     protected function pushEvent(Event $event)
     {
         $eventName = $event->getName();
         if (in_array($eventName, $this->eventStack)) {
-            throw new \RuntimeException(sprintf("Circular call to script handler '%s' detected", $eventName));
+            throw new RuntimeException(sprintf("Circular call to script handler '%s' detected", $eventName));
         }
 
         return array_push($this->eventStack, $eventName);

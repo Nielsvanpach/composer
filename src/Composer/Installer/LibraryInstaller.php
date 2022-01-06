@@ -12,6 +12,8 @@
 
 namespace Composer\Installer;
 
+use InvalidArgumentException;
+use function React\Promise\resolve;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
@@ -141,7 +143,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 
         $promise = $this->installCode($package);
         if (!$promise instanceof PromiseInterface) {
-            $promise = \React\Promise\resolve();
+            $promise = resolve();
         }
 
         $binaryInstaller = $this->binaryInstaller;
@@ -161,7 +163,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         if (!$repo->hasPackage($initial)) {
-            throw new \InvalidArgumentException('Package is not installed: '.$initial);
+            throw new InvalidArgumentException('Package is not installed: '.$initial);
         }
 
         $this->initializeVendorDir();
@@ -169,7 +171,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $this->binaryInstaller->removeBinaries($initial);
         $promise = $this->updateCode($initial, $target);
         if (!$promise instanceof PromiseInterface) {
-            $promise = \React\Promise\resolve();
+            $promise = resolve();
         }
 
         $binaryInstaller = $this->binaryInstaller;
@@ -190,12 +192,12 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (!$repo->hasPackage($package)) {
-            throw new \InvalidArgumentException('Package is not installed: '.$package);
+            throw new InvalidArgumentException('Package is not installed: '.$package);
         }
 
         $promise = $this->removeCode($package);
         if (!$promise instanceof PromiseInterface) {
-            $promise = \React\Promise\resolve();
+            $promise = resolve();
         }
 
         $binaryInstaller = $this->binaryInstaller;
@@ -284,7 +286,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
             ) {
                 $promise = $this->removeCode($initial);
                 if (!$promise instanceof PromiseInterface) {
-                    $promise = \React\Promise\resolve();
+                    $promise = resolve();
                 }
 
                 return $promise->then(function () use ($target) {

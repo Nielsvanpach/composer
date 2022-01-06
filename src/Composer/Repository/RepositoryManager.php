@@ -12,6 +12,8 @@
 
 namespace Composer\Repository;
 
+use Composer\Semver\Constraint\ConstraintInterface;
+use InvalidArgumentException;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
@@ -58,7 +60,7 @@ class RepositoryManager
      * Searches for a package by its name and version in managed repositories.
      *
      * @param string                                                 $name       package name
-     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
+     * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface|null
      */
@@ -78,7 +80,7 @@ class RepositoryManager
      * Searches for all packages matching a name and optionally a version in managed repositories.
      *
      * @param string                                                 $name       package name
-     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
+     * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface[]
      */
@@ -125,13 +127,13 @@ class RepositoryManager
      * @param  string                    $type   repository type
      * @param  array<string, mixed>      $config repository configuration
      * @param  string                    $name   repository name
-     * @throws \InvalidArgumentException if repository for provided type is not registered
+     * @throws InvalidArgumentException if repository for provided type is not registered
      * @return RepositoryInterface
      */
     public function createRepository($type, $config, $name = null)
     {
         if (!isset($this->repositoryClasses[$type])) {
-            throw new \InvalidArgumentException('Repository type is not registered: '.$type);
+            throw new InvalidArgumentException('Repository type is not registered: '.$type);
         }
 
         if (isset($config['packagist']) && false === $config['packagist']) {

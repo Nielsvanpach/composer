@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Archiver;
 
+use FilterIterator;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use FilesystemIterator;
@@ -26,7 +27,7 @@ use Symfony\Component\Finder\SplFileInfo;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class ArchivableFilesFinder extends \FilterIterator
+class ArchivableFilesFinder extends FilterIterator
 {
     /**
      * @var Finder

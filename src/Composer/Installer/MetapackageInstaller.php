@@ -12,6 +12,8 @@
 
 namespace Composer\Installer;
 
+use InvalidArgumentException;
+use function React\Promise\resolve;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
@@ -56,7 +58,7 @@ class MetapackageInstaller implements InstallerInterface
     public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
         // noop
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -65,7 +67,7 @@ class MetapackageInstaller implements InstallerInterface
     public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
         // noop
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -74,7 +76,7 @@ class MetapackageInstaller implements InstallerInterface
     public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
         // noop
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -86,7 +88,7 @@ class MetapackageInstaller implements InstallerInterface
 
         $repo->addPackage(clone $package);
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -95,7 +97,7 @@ class MetapackageInstaller implements InstallerInterface
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         if (!$repo->hasPackage($initial)) {
-            throw new \InvalidArgumentException('Package is not installed: '.$initial);
+            throw new InvalidArgumentException('Package is not installed: '.$initial);
         }
 
         $this->io->writeError("  - " . UpdateOperation::format($initial, $target));
@@ -103,7 +105,7 @@ class MetapackageInstaller implements InstallerInterface
         $repo->removePackage($initial);
         $repo->addPackage(clone $target);
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -112,14 +114,14 @@ class MetapackageInstaller implements InstallerInterface
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (!$repo->hasPackage($package)) {
-            throw new \InvalidArgumentException('Package is not installed: '.$package);
+            throw new InvalidArgumentException('Package is not installed: '.$package);
         }
 
         $this->io->writeError("  - " . UninstallOperation::format($package));
 
         $repo->removePackage($package);
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**

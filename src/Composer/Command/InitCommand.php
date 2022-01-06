@@ -12,6 +12,11 @@
 
 namespace Composer\Command;
 
+use Seld\JsonLint\ParsingException;
+use InvalidArgumentException;
+use stdClass;
+use RuntimeException;
+use Exception;
 use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
@@ -96,7 +101,7 @@ EOT
      * @inheritDoc
      *
      * @return int
-     * @throws \Seld\JsonLint\ParsingException
+     * @throws ParsingException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -106,7 +111,7 @@ EOT
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)));
 
         if (isset($options['name']) && !Preg::isMatch('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $options['name'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'The package name '.$options['name'].' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
             );
         }
@@ -129,15 +134,15 @@ EOT
             unset($options['stability']);
         }
 
-        $options['require'] = isset($options['require']) ? $this->formatRequirements($options['require']) : new \stdClass;
+        $options['require'] = isset($options['require']) ? $this->formatRequirements($options['require']) : new stdClass;
         if (array() === $options['require']) {
-            $options['require'] = new \stdClass;
+            $options['require'] = new stdClass;
         }
 
         if (isset($options['require-dev'])) {
             $options['require-dev'] = $this->formatRequirements($options['require-dev']);
             if (array() === $options['require-dev']) {
-                $options['require-dev'] = new \stdClass;
+                $options['require-dev'] = new stdClass;
             }
         }
 
@@ -165,7 +170,7 @@ EOT
             }
         } else {
             if (json_encode($options) === '{"require":{}}') {
-                throw new \RuntimeException('You have to run this command in interactive mode, or specify at least some data using --name, --require, etc.');
+                throw new RuntimeException('You have to run this command in interactive mode, or specify at least some data using --name, --require, etc.');
             }
 
             $io->writeError('Writing '.$file->getPath());
@@ -311,7 +316,7 @@ EOT
                 }
 
                 if (!Preg::isMatch('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $value)) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'The package name '.$value.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                     );
                 }
@@ -373,7 +378,7 @@ EOT
                 }
 
                 if (!isset(BasePackage::$stabilities[$value])) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'Invalid minimum stability "'.$value.'". Must be empty or one of: '.
                         implode(', ', array_keys(BasePackage::$stabilities))
                     );
@@ -453,7 +458,7 @@ EOT
                 $value = $value ?: $autoload;
 
                 if (!Preg::isMatch('{^[^/][A-Za-z0-9\-_/]+/$}', $value)) {
-                    throw new \InvalidArgumentException(sprintf(
+                    throw new InvalidArgumentException(sprintf(
                         'The src folder name "%s" is invalid. Please add a relative path with tailing forward slash. [A-Za-z0-9_-/]+/',
                         $value
                     ));
@@ -483,7 +488,7 @@ EOT
             }
         }
 
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             'Invalid author string.  Must be in the format: '.
             'John Smith <john@example.com>'
         );
@@ -512,7 +517,7 @@ EOT
      * @param bool $fixed
      *
      * @return array<string>
-     * @throws \Exception
+     * @throws Exception
      */
     final protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), PlatformRepository $platformRepo = null, $preferredStability = 'stable', $checkProvidedVersions = true, $fixed = false)
     {
@@ -631,7 +636,7 @@ EOT
                             return $packageMatches['name'];
                         }
 
-                        throw new \Exception('Not a valid selection');
+                        throw new Exception('Not a valid selection');
                     };
 
                     $package = $io->askAndValidate(
@@ -862,7 +867,7 @@ EOT
      * @param  string|null               $requiredVersion
      * @param  string                    $minimumStability
      * @param  bool                      $fixed
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return array{string, string}     name version
      */
     private function findBestVersionAndNameForPackage(InputInterface $input, $name, PlatformRepository $platformRepo = null, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null, $fixed = null)
@@ -889,7 +894,7 @@ EOT
 
             // Check whether the package requirements were the problem
             if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && ($candidate = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, PlatformRequirementFilterFactory::ignoreAll()))) {
-                throw new \InvalidArgumentException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     'Package %s%s has requirements incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
                     $name,
                     $requiredVersion ? ' at version '.$requiredVersion : ''
@@ -899,12 +904,12 @@ EOT
             if ($package = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
                 // we must first verify if a valid package would be found in a lower priority repository
                 if ($allReposPackage = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages from the higher priority repository do not match your minimum-stability and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.'
                     );
                 }
 
-                throw new \InvalidArgumentException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     'Could not find a version of package %s matching your minimum-stability (%s). Require it with an explicit version constraint allowing its desired stability.',
                     $name,
                     $effectiveMinimumStability
@@ -914,12 +919,12 @@ EOT
             if ($requiredVersion && $package = $versionSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter)) {
                 // we must first verify if a valid package would be found in a lower priority repository
                 if ($allReposPackage = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, PlatformRequirementFilterFactory::ignoreNothing(), RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages from the higher priority repository do not match your constraint and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.'
                     );
                 }
 
-                throw new \InvalidArgumentException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     'Could not find package %s in a version matching "%s" and a stability matching "'.$effectiveMinimumStability.'".',
                     $name,
                     $requiredVersion
@@ -932,7 +937,7 @@ EOT
                     $additional = PHP_EOL.PHP_EOL.'Additionally, the package was only found with a stability of "'.$candidate->getStability().'" while your minimum stability is "'.$effectiveMinimumStability.'".';
                 }
 
-                throw new \InvalidArgumentException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     'Could not find package %s in any version matching your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo) . '%s',
                     $name,
                     $additional
@@ -943,20 +948,20 @@ EOT
             $similar = $this->findSimilar($name);
             if ($similar) {
                 if (in_array($name, $similar, true)) {
-                    throw new \InvalidArgumentException(sprintf(
+                    throw new InvalidArgumentException(sprintf(
                         "Could not find package %s. It was however found via repository search, which indicates a consistency issue with the repository.",
                         $name
                     ));
                 }
 
-                throw new \InvalidArgumentException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     "Could not find package %s.\n\nDid you mean " . (count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
                     $name,
                     implode("\n    ", $similar)
                 ));
             }
 
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'Could not find a matching version of package %s. Check the package spelling, your version constraint and that the package is available in a stability which matches your minimum-stability (%s).',
                 $name,
                 $effectiveMinimumStability
@@ -1018,7 +1023,7 @@ EOT
     {
         try {
             $results = $this->repos->search($package);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // ignore search errors
             return array();
         }
@@ -1047,7 +1052,7 @@ EOT
             $updateCommand = $this->getApplication()->find('update');
             $this->getApplication()->resetComposer();
             $updateCommand->run(new ArrayInput(array()), $output);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->getIO()->writeError('Could not update dependencies. Run `composer update` to see more information.');
         }
     }
@@ -1061,7 +1066,7 @@ EOT
             $command = $this->getApplication()->find('dump-autoload');
             $this->getApplication()->resetComposer();
             $command->run(new ArrayInput(array()), $output);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->getIO()->writeError('Could not run dump-autoload.');
         }
     }

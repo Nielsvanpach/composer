@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Exception;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Pcre\Preg;
@@ -53,7 +54,7 @@ class PackageRepository extends ArrayRepository
         foreach ($this->config as $package) {
             try {
                 $package = $loader->load($package);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 throw new InvalidRepositoryException('A repository of type "package" contains an invalid package definition: '.$e->getMessage()."\n\nInvalid package definition:\n".json_encode($package));
             }
 

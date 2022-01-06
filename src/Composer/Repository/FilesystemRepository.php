@@ -12,6 +12,10 @@
 
 namespace Composer\Repository;
 
+use InvalidArgumentException;
+use UnexpectedValueException;
+use Exception;
+use Composer\InstalledVersions;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\RootPackageInterface;
@@ -52,7 +56,7 @@ class FilesystemRepository extends WritableArrayRepository
         $this->rootPackage = $rootPackage;
         $this->filesystem = $filesystem ?: new Filesystem;
         if ($dumpVersions && !$rootPackage) {
-            throw new \InvalidArgumentException('Expected a root package instance if $dumpVersions is true');
+            throw new InvalidArgumentException('Expected a root package instance if $dumpVersions is true');
         }
     }
 
@@ -80,9 +84,9 @@ class FilesystemRepository extends WritableArrayRepository
             }
 
             if (!is_array($packages)) {
-                throw new \UnexpectedValueException('Could not parse package list from the repository');
+                throw new UnexpectedValueException('Could not parse package list from the repository');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new InvalidRepositoryException('Invalid repository data in '.$this->file->getPath().', packages could not be loaded: ['.get_class($e).'] '.$e->getMessage());
         }
 
@@ -150,7 +154,7 @@ class FilesystemRepository extends WritableArrayRepository
             $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
             $this->filesystem->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
 
-            \Composer\InstalledVersions::reload($versions);
+            InstalledVersions::reload($versions);
         }
     }
 

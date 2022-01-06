@@ -12,6 +12,11 @@
 
 namespace Composer\Downloader;
 
+use InvalidArgumentException;
+use UnexpectedValueException;
+use RuntimeException;
+use Exception;
+use function React\Promise\resolve;
 use Composer\Config;
 use Composer\Cache;
 use Composer\IO\IOInterface;
@@ -115,7 +120,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
         if (!$package->getDistUrl()) {
-            throw new \InvalidArgumentException('The given package is missing url information');
+            throw new InvalidArgumentException('The given package is missing url information');
         }
 
         $cacheKeyGenerator = function (PackageInterface $package, $key) {
@@ -185,7 +190,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 if (!$cache->isReadOnly()) {
                     $this->lastCacheWrites[$package->getName()] = $cacheKey;
                 }
-                $result = \React\Promise\resolve($fileName);
+                $result = resolve($fileName);
             } else {
                 if ($output) {
                     $io->writeError("  - Downloading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
@@ -204,12 +209,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 }
 
                 if (!file_exists($fileName)) {
-                    throw new \UnexpectedValueException($url['base'].' could not be saved to '.$fileName.', make sure the'
+                    throw new UnexpectedValueException($url['base'].' could not be saved to '.$fileName.', make sure the'
                         .' directory is writable and you have internet connectivity');
                 }
 
                 if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
-                    throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url['base'].')');
+                    throw new UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url['base'].')');
                 }
 
                 if ($eventDispatcher) {
@@ -297,7 +302,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -328,7 +333,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             }
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -356,7 +361,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             }
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -404,7 +409,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $promise = $this->remove($initial, $path, false);
         if (!$promise instanceof PromiseInterface) {
-            $promise = \React\Promise\resolve();
+            $promise = resolve();
         }
 
         return $promise->then(function () use ($target, $path) {
@@ -428,7 +433,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         return $promise->then(function ($result) use ($path) {
             if (!$result) {
-                throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
+                throw new RuntimeException('Could not completely delete '.$path.', aborting.');
             }
         });
     }
@@ -462,13 +467,13 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @param  PackageInterface  $package package the url is coming from
      * @param  string            $url     download url
-     * @throws \RuntimeException If any problem with the url
+     * @throws RuntimeException If any problem with the url
      * @return string            url
      */
     protected function processUrl(PackageInterface $package, $url)
     {
         if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
-            throw new \RuntimeException('You must enable the openssl extension to download files via https');
+            throw new RuntimeException('You must enable the openssl extension to download files via https');
         }
 
         if ($package->getDistReference()) {
@@ -480,7 +485,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
     /**
      * @inheritDoc
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function getLocalChanges(PackageInterface $package, $targetDir)
     {
@@ -508,7 +513,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $comparer->doCompare();
             $output = $comparer->getChanged(true, true);
             $this->filesystem->removeDirectory($targetDir.'_compare');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         $this->io = $prevIO;

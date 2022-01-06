@@ -12,13 +12,16 @@
 
 namespace Composer\DependencyResolver;
 
+use Iterator;
+use Countable;
+use ReturnTypeWillChange;
 /**
  * Stores decisions on installing, removing or keeping packages
  *
  * @author Nils Adermann <naderman@naderman.de>
- * @implements \Iterator<array{0: int, 1: Rule}>
+ * @implements Iterator<array{0: int, 1: Rule}>
  */
-class Decisions implements \Iterator, \Countable
+class Decisions implements Iterator, Countable
 {
     const DECISION_LITERAL = 0;
     const DECISION_REASON = 1;
@@ -218,7 +221,7 @@ class Decisions implements \Iterator, \Countable
     /**
      * @return array{0: int, 1: Rule}|false
      */
-    #[\ReturnTypeWillChange]
+    #[ReturnTypeWillChange]
     public function current()
     {
         return current($this->decisionQueue);

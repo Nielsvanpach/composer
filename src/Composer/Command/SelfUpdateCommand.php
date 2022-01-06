@@ -12,6 +12,12 @@
 
 namespace Composer\Command;
 
+use UnexpectedValueException;
+use InvalidArgumentException;
+use RuntimeException;
+use Exception;
+use Phar;
+use PharException;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\Config;
@@ -82,8 +88,8 @@ EOT
     {
         // trigger autoloading of a few classes which may be needed when verifying/swapping the phar file
         // to ensure we do not try to load them from the new phar, see https://github.com/composer/composer/issues/10252
-        class_exists('Composer\Util\Platform');
-        class_exists('Composer\Downloader\FilesystemException');
+        class_exists(Platform::class);
+        class_exists(FilesystemException::class);
 
         $config = Factory::createConfig();
 
@@ -153,7 +159,7 @@ EOT
         $latestStable = $versionsUtil->getLatest('stable');
         try {
             $latestPreview = $versionsUtil->getLatest('preview');
-        } catch (\UnexpectedValueException $e) {
+        } catch (UnexpectedValueException $e) {
             $latestPreview = $latestStable;
         }
         $latestVersion = $latest['version'];
@@ -231,7 +237,7 @@ EOT
             $signature = $httpDownloader->get($remoteFilename.'.sig')->getBody();
         } catch (TransportException $e) {
             if ($e->getStatusCode() === 404) {
-                throw new \InvalidArgumentException('Version "'.$updateVersion.'" could not be found.', 0, $e);
+                throw new InvalidArgumentException('Version "'.$updateVersion.'" could not be found.', 0, $e);
             }
             throw $e;
         }
@@ -250,7 +256,7 @@ EOT
             $io->writeError('<warning>Skipping phar signature verification as you have disabled OpenSSL via config.disable-tls</warning>');
         } else {
             if (!extension_loaded('openssl')) {
-                throw new \RuntimeException('The openssl extension is required for phar signatures to be verified but it is not available. '
+                throw new RuntimeException('The openssl extension is required for phar signatures to be verified but it is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
             }
 
@@ -299,11 +305,11 @@ TAGSPUBKEY
 
             $pubkeyid = openssl_pkey_get_public($sigFile);
             if (false === $pubkeyid) {
-                throw new \RuntimeException('Failed loading the public key from '.$sigFile);
+                throw new RuntimeException('Failed loading the public key from '.$sigFile);
             }
             $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
             if (!in_array('sha384', array_map('strtolower', openssl_get_md_methods()))) {
-                throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
+                throw new RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
             }
             $signature = json_decode($signature, true);
             $signature = base64_decode($signature['sha384']);
@@ -316,7 +322,7 @@ TAGSPUBKEY
             }
 
             if (!$verified) {
-                throw new \RuntimeException('The phar signature did not match the file you downloaded, this means your public keys are outdated or that the phar file is corrupt/has been modified');
+                throw new RuntimeException('The phar signature did not match the file you downloaded, this means your public keys are outdated or that the phar file is corrupt/has been modified');
             }
         }
 
@@ -345,19 +351,19 @@ TAGSPUBKEY
 
     /**
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     protected function fetchKeys(IOInterface $io, Config $config)
     {
         if (!$io->isInteractive()) {
-            throw new \RuntimeException('Public keys can not be fetched in non-interactive mode, please run Composer interactively');
+            throw new RuntimeException('Public keys can not be fetched in non-interactive mode, please run Composer interactively');
         }
 
         $io->write('Open <info>https://composer.github.io/pubkeys.html</info> to find the latest keys');
 
         $validator = function ($value) {
             if (!Preg::isMatch('{^-----BEGIN PUBLIC KEY-----$}', trim($value))) {
-                throw new \UnexpectedValueException('Invalid input');
+                throw new UnexpectedValueException('Invalid input');
             }
 
             return trim($value)."\n";
@@ -402,7 +408,7 @@ TAGSPUBKEY
     {
         $rollbackVersion = $this->getLastBackupVersion($rollbackDir);
         if (!$rollbackVersion) {
-            throw new \UnexpectedValueException('Composer rollback failed: no installation to roll back to in "'.$rollbackDir.'"');
+            throw new UnexpectedValueException('Composer rollback failed: no installation to roll back to in "'.$rollbackDir.'"');
         }
 
         $oldFile = $rollbackDir . '/' . $rollbackVersion . self::OLD_INSTALL_EXT;
@@ -464,7 +470,7 @@ TAGSPUBKEY
             }
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // see if we can run this operation as an Admin on Windows
             if (!is_writable(dirname($localFilename))
                 && $io->isInteractive()
@@ -538,7 +544,7 @@ TAGSPUBKEY
      * Code taken from getcomposer.org/installer. Any changes should be made
      * there and replicated here
      *
-     * @throws \Exception
+     * @throws Exception
      * @return bool       If the operation succeeded
      */
     protected function validatePhar($pharFile, &$error)
@@ -549,12 +555,12 @@ TAGSPUBKEY
 
         try {
             // Test the phar validity
-            $phar = new \Phar($pharFile);
+            $phar = new Phar($pharFile);
             // Free the variable to unlock the file
             unset($phar);
             $result = true;
-        } catch (\Exception $e) {
-            if (!$e instanceof \UnexpectedValueException && !$e instanceof \PharException) {
+        } catch (Exception $e) {
+            if (!$e instanceof UnexpectedValueException && !$e instanceof PharException) {
                 throw $e;
             }
             $error = $e->getMessage();

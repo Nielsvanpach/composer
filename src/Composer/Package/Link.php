@@ -12,6 +12,7 @@
 
 namespace Composer\Package;
 
+use UnexpectedValueException;
 use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
@@ -135,13 +136,13 @@ class Link
     }
 
     /**
-     * @throws \UnexpectedValueException If no pretty constraint was provided
+     * @throws UnexpectedValueException If no pretty constraint was provided
      * @return string
      */
     public function getPrettyConstraint()
     {
         if (null === $this->prettyConstraint) {
-            throw new \UnexpectedValueException(sprintf('Link %s has been misconfigured and had no prettyConstraint given.', $this));
+            throw new UnexpectedValueException(sprintf('Link %s has been misconfigured and had no prettyConstraint given.', $this));
         }
 
         return $this->prettyConstraint;

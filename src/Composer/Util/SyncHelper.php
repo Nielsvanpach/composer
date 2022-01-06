@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use Exception;
 use Composer\Downloader\DownloaderInterface;
 use Composer\Package\PackageInterface;
 use React\Promise\PromiseInterface;
@@ -45,7 +46,7 @@ class SyncHelper
             } else {
                 self::await($loop, $downloader->install($package, $path));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             self::await($loop, $downloader->cleanup($type, $package, $path, $prevPackage));
             throw $e;
         }

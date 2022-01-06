@@ -12,6 +12,9 @@
 
 namespace Composer\Command;
 
+use Exception;
+use RuntimeException;
+use InvalidArgumentException;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
@@ -186,7 +189,7 @@ EOT
      * @param bool                      $addRepository
      *
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
     public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName = null, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $noInstall = false, PlatformRequirementFilterInterface $platformRequirementFilter = null, $secureHttp = true, $addRepository = false)
     {
@@ -295,10 +298,10 @@ EOT
                 unset($finder);
                 foreach ($dirs as $dir) {
                     if (!$fs->removeDirectory($dir)) {
-                        throw new \RuntimeException('Could not remove '.$dir);
+                        throw new RuntimeException('Could not remove '.$dir);
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $io->writeError('<error>An error occurred while removing the VCS metadata: '.$e->getMessage().'</error>');
             }
 
@@ -349,7 +352,7 @@ EOT
      * @param bool               $secureHttp
      *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     protected function installRootPackage(IOInterface $io, Config $config, $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $secureHttp = true)
     {
@@ -380,10 +383,10 @@ EOT
 
         if (file_exists($directory)) {
             if (!is_dir($directory)) {
-                throw new \InvalidArgumentException('Cannot create project directory at "'.$directory.'", it exists as a file.');
+                throw new InvalidArgumentException('Cannot create project directory at "'.$directory.'", it exists as a file.');
             }
             if (!$fs->isDirEmpty($directory)) {
-                throw new \InvalidArgumentException('Project directory "'.$directory.'" is not empty.');
+                throw new InvalidArgumentException('Project directory "'.$directory.'" is not empty.');
             }
         }
 
@@ -400,7 +403,7 @@ EOT
         $stability = VersionParser::normalizeStability($stability);
 
         if (!isset(BasePackage::$stabilities[$stability])) {
-            throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
+            throw new InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
         $composer = Factory::create($io, $config->all(), $disablePlugins);
@@ -433,10 +436,10 @@ EOT
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
             if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && $versionSelector->findBestCandidate($name, $packageVersion, $stability, PlatformRequirementFilterFactory::ignoreAll())) {
-                throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
+                throw new InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
 
-            throw new \InvalidArgumentException($errorMessage .'.');
+            throw new InvalidArgumentException($errorMessage .'.');
         }
 
         // handler Ctrl+C for unix-like systems

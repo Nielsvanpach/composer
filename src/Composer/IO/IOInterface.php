@@ -12,6 +12,9 @@
 
 namespace Composer\IO;
 
+use RuntimeException;
+use Exception;
+use InvalidArgumentException;
 use Composer\Config;
 use Psr\Log\LoggerInterface;
 
@@ -137,7 +140,7 @@ interface IOInterface extends LoggerInterface
      * @param string $question The question to ask
      * @param string $default  The default answer if none is given by the user
      *
-     * @throws \RuntimeException If there is no data to read in the input stream
+     * @throws RuntimeException If there is no data to read in the input stream
      * @return string|null       The user answer
      */
     public function ask($question, $default = null);
@@ -166,7 +169,7 @@ interface IOInterface extends LoggerInterface
      * @param null|int $attempts  Max number of times to ask before giving up (default of null means infinite)
      * @param mixed    $default   The default answer if none is given by the user
      *
-     * @throws \Exception When any of the validators return an error
+     * @throws Exception When any of the validators return an error
      * @return mixed
      */
     public function askAndValidate($question, $validator, $attempts = null, $default = null);
@@ -190,7 +193,7 @@ interface IOInterface extends LoggerInterface
      * @param string      $errorMessage Message which will be shown if invalid value from choice list would be picked
      * @param bool        $multiselect  Select more than one value separated by comma
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return int|string|string[]|bool     The selected value or values (the key of the choices array)
      */
     public function select($question, $choices, $default, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false);

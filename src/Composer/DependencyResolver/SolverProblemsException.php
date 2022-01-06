@@ -12,13 +12,14 @@
 
 namespace Composer\DependencyResolver;
 
+use RuntimeException;
 use Composer\Util\IniHelper;
 use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
-class SolverProblemsException extends \RuntimeException
+class SolverProblemsException extends RuntimeException
 {
     const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
 

@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use LogicException;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Link;
@@ -257,7 +258,7 @@ abstract class Rule
                 return $sourcePackage;
 
             default:
-                throw new \LogicException('Not implemented');
+                throw new LogicException('Not implemented');
         }
     }
 

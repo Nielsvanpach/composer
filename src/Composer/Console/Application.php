@@ -12,6 +12,42 @@
 
 namespace Composer\Console;
 
+use InvalidArgumentException;
+use Composer\Command\BaseCommand;
+use Composer\Command\ScriptAliasCommand;
+use Exception;
+use RuntimeException;
+use Composer\Command\AboutCommand;
+use Composer\Command\ConfigCommand;
+use Composer\Command\DependsCommand;
+use Composer\Command\ProhibitsCommand;
+use Composer\Command\InitCommand;
+use Composer\Command\InstallCommand;
+use Composer\Command\CreateProjectCommand;
+use Composer\Command\UpdateCommand;
+use Composer\Command\SearchCommand;
+use Composer\Command\ValidateCommand;
+use Composer\Command\ShowCommand;
+use Composer\Command\SuggestsCommand;
+use Composer\Command\RequireCommand;
+use Composer\Command\DumpAutoloadCommand;
+use Composer\Command\StatusCommand;
+use Composer\Command\ArchiveCommand;
+use Composer\Command\DiagnoseCommand;
+use Composer\Command\RunScriptCommand;
+use Composer\Command\LicensesCommand;
+use Composer\Command\GlobalCommand;
+use Composer\Command\ClearCacheCommand;
+use Composer\Command\RemoveCommand;
+use Composer\Command\HomeCommand;
+use Composer\Command\ExecCommand;
+use Composer\Command\OutdatedCommand;
+use Composer\Command\CheckPlatformReqsCommand;
+use Composer\Command\FundCommand;
+use Composer\Command\ReinstallCommand;
+use Composer\Command\SelfUpdateCommand;
+use Composer\Plugin\Capability\CommandProvider;
+use UnexpectedValueException;
 use Composer\IO\NullIO;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
@@ -165,7 +201,7 @@ class Application extends BaseApplication
             } catch (CommandNotFoundException $e) {
                 // we'll check command validity again later after plugins are loaded
                 $commandName = false;
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
             }
         }
 
@@ -238,8 +274,8 @@ class Application extends BaseApplication
             try {
                 $command = $this->find($name);
                 $commandName = $command->getName();
-                $isProxyCommand = ($command instanceof Command\BaseCommand && $command->isProxyCommand());
-            } catch (\InvalidArgumentException $e) {
+                $isProxyCommand = ($command instanceof BaseCommand && $command->isProxyCommand());
+            } catch (InvalidArgumentException $e) {
             }
         }
 
@@ -313,7 +349,7 @@ class Application extends BaseApplication
                                     $description = $composer['scripts-descriptions'][$script];
                                 }
 
-                                $this->add(new Command\ScriptAliasCommand($script, $description));
+                                $this->add(new ScriptAliasCommand($script, $description));
                             }
                         }
                     }
@@ -341,7 +377,7 @@ class Application extends BaseApplication
             return $result;
         } catch (ScriptExecutionException $e) {
             return (int) $e->getCode();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $ghe = new GithubActionError($this->io);
             $ghe->emit($e->getMessage());
 
@@ -355,14 +391,14 @@ class Application extends BaseApplication
 
     /**
      * @param  InputInterface    $input
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return string
      */
     private function getNewWorkingDir(InputInterface $input)
     {
         $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
         if (false !== $workingDir && !is_dir($workingDir)) {
-            throw new \RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
+            throw new RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
         }
 
         return $workingDir;
@@ -371,7 +407,7 @@ class Application extends BaseApplication
     /**
      * @return void
      */
-    private function hintCommonErrors(\Exception $exception)
+    private function hintCommonErrors(Exception $exception)
     {
         $io = $this->getIO();
 
@@ -389,7 +425,7 @@ class Application extends BaseApplication
                     $io->writeError('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>', true, IOInterface::QUIET);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
         Silencer::restore();
 
@@ -420,8 +456,8 @@ class Application extends BaseApplication
      * @param  bool|null               $disablePlugins
      * @param  bool|null               $disableScripts
      * @throws JsonValidationException
-     * @throws \InvalidArgumentException
-     * @return ?\Composer\Composer If $required is true then the return value is guaranteed
+     * @throws InvalidArgumentException
+     * @return ?Composer If $required is true then the return value is guaranteed
      */
     public function getComposer($required = true, $disablePlugins = null, $disableScripts = null)
     {
@@ -435,7 +471,7 @@ class Application extends BaseApplication
         if (null === $this->composer) {
             try {
                 $this->composer = Factory::create($this->io, null, $disablePlugins, $disableScripts);
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->writeError($e->getMessage());
                     if ($this->areExceptionsCaught()) {
@@ -486,38 +522,38 @@ class Application extends BaseApplication
     protected function getDefaultCommands(): array
     {
         $commands = array_merge(parent::getDefaultCommands(), array(
-            new Command\AboutCommand(),
-            new Command\ConfigCommand(),
-            new Command\DependsCommand(),
-            new Command\ProhibitsCommand(),
-            new Command\InitCommand(),
-            new Command\InstallCommand(),
-            new Command\CreateProjectCommand(),
-            new Command\UpdateCommand(),
-            new Command\SearchCommand(),
-            new Command\ValidateCommand(),
-            new Command\ShowCommand(),
-            new Command\SuggestsCommand(),
-            new Command\RequireCommand(),
-            new Command\DumpAutoloadCommand(),
-            new Command\StatusCommand(),
-            new Command\ArchiveCommand(),
-            new Command\DiagnoseCommand(),
-            new Command\RunScriptCommand(),
-            new Command\LicensesCommand(),
-            new Command\GlobalCommand(),
-            new Command\ClearCacheCommand(),
-            new Command\RemoveCommand(),
-            new Command\HomeCommand(),
-            new Command\ExecCommand(),
-            new Command\OutdatedCommand(),
-            new Command\CheckPlatformReqsCommand(),
-            new Command\FundCommand(),
-            new Command\ReinstallCommand(),
+            new AboutCommand(),
+            new ConfigCommand(),
+            new DependsCommand(),
+            new ProhibitsCommand(),
+            new InitCommand(),
+            new InstallCommand(),
+            new CreateProjectCommand(),
+            new UpdateCommand(),
+            new SearchCommand(),
+            new ValidateCommand(),
+            new ShowCommand(),
+            new SuggestsCommand(),
+            new RequireCommand(),
+            new DumpAutoloadCommand(),
+            new StatusCommand(),
+            new ArchiveCommand(),
+            new DiagnoseCommand(),
+            new RunScriptCommand(),
+            new LicensesCommand(),
+            new GlobalCommand(),
+            new ClearCacheCommand(),
+            new RemoveCommand(),
+            new HomeCommand(),
+            new ExecCommand(),
+            new OutdatedCommand(),
+            new CheckPlatformReqsCommand(),
+            new FundCommand(),
+            new ReinstallCommand(),
         ));
 
         if (strpos(__FILE__, 'phar:') === 0) {
-            $commands[] = new Command\SelfUpdateCommand();
+            $commands[] = new SelfUpdateCommand();
         }
 
         return $commands;
@@ -564,14 +600,14 @@ class Application extends BaseApplication
 
         if (null !== $composer) {
             $pm = $composer->getPluginManager();
-            foreach ($pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', array('composer' => $composer, 'io' => $this->io)) as $capability) {
+            foreach ($pm->getPluginCapabilities(CommandProvider::class, array('composer' => $composer, 'io' => $this->io)) as $capability) {
                 $newCommands = $capability->getCommands();
                 if (!is_array($newCommands)) {
-                    throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' failed to return an array from getCommands');
+                    throw new UnexpectedValueException('Plugin capability '.get_class($capability).' failed to return an array from getCommands');
                 }
                 foreach ($newCommands as $command) {
-                    if (!$command instanceof Command\BaseCommand) {
-                        throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' returned an invalid value, we expected an array of Composer\Command\BaseCommand objects');
+                    if (!$command instanceof BaseCommand) {
+                        throw new UnexpectedValueException('Plugin capability '.get_class($capability).' returned an invalid value, we expected an array of Composer\Command\BaseCommand objects');
                     }
                 }
                 $commands = array_merge($commands, $newCommands);

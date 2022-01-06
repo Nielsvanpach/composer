@@ -12,9 +12,10 @@
 
 namespace Composer\Exception;
 
+use RuntimeException;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class IrrecoverableDownloadException extends \RuntimeException
+class IrrecoverableDownloadException extends RuntimeException
 {
 }

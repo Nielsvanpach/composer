@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use Exception;
 /**
  * Temporarily suppress PHP error reporting, usually warnings and below.
  *
@@ -60,7 +61,7 @@ class Silencer
      * Future improvement: when PHP requirements are raised add Callable type hint (5.4) and variadic parameters (5.6)
      *
      * @param  callable   $callable Function to execute.
-     * @throws \Exception Any exceptions from the callback are rethrown.
+     * @throws Exception Any exceptions from the callback are rethrown.
      * @return mixed      Return value of the callback.
      */
     public static function call($callable /*, ...$parameters */)
@@ -71,7 +72,7 @@ class Silencer
             self::restore();
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Use a finally block for this when requirements are raised to PHP 5.5
             self::restore();
             throw $e;

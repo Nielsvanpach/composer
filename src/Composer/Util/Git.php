@@ -12,6 +12,9 @@
 
 namespace Composer\Util;
 
+use InvalidArgumentException;
+use RuntimeException;
+use Exception;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
@@ -60,7 +63,7 @@ class Git
         }
 
         if (Preg::isMatch('{^ssh://[^@]+@[^:]+:[^0-9]+}', $url)) {
-            throw new \InvalidArgumentException('The source URL ' . $url . ' is invalid, ssh URLs should have a port number after ":".' . "\n" . 'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
+            throw new InvalidArgumentException('The source URL ' . $url . ' is invalid, ssh URLs should have a port number after ":".' . "\n" . 'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
         }
 
         if (!$initialClone) {
@@ -73,7 +76,7 @@ class Git
 
         $protocols = $this->config->get('github-protocols');
         if (!is_array($protocols)) {
-            throw new \RuntimeException('Config value "github-protocols" must be an array, got ' . gettype($protocols));
+            throw new RuntimeException('Config value "github-protocols" must be an array, got ' . gettype($protocols));
         }
         // public github, autoswitch protocols
         if (Preg::isMatch('{^(?:https?|git)://' . self::getGitHubDomainsRegex($this->config) . '/(.*)}', $url, $match)) {
@@ -289,7 +292,7 @@ class Git
                     return sprintf('git remote set-url origin -- %s && git remote update --prune origin && git remote set-url origin -- %s && git gc --auto', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
                 };
                 $this->runCommand($commandCallable, $url, $dir);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->io->writeError('<error>Sync mirror failed: ' . $e->getMessage() . '</error>', true, IOInterface::DEBUG);
 
                 return false;
@@ -447,10 +450,10 @@ class Git
         clearstatcache();
 
         if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
-            throw new \RuntimeException(Url::sanitize('Failed to clone ' . $url . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
+            throw new RuntimeException(Url::sanitize('Failed to clone ' . $url . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
         }
 
-        throw new \RuntimeException(Url::sanitize($message));
+        throw new RuntimeException(Url::sanitize($message));
     }
 
     /**

@@ -12,6 +12,9 @@
 
 namespace Composer\Util\Http;
 
+use LogicException;
+use Exception;
+use RuntimeException;
 use Composer\Config;
 use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
@@ -375,7 +378,7 @@ class CurlDownloader
                 fclose($job['headerHandle']);
 
                 if ($statusCode === 0) {
-                    throw new \LogicException('Received unexpected http status code 0 without error for '.Url::sanitize($progress['url']).': headers '.var_export($headers, true).' curl info '.var_export($progress, true));
+                    throw new LogicException('Received unexpected http status code 0 without error for '.Url::sanitize($progress['url']).': headers '.var_export($headers, true).' curl info '.var_export($progress, true));
                 }
 
                 // prepare response object
@@ -440,7 +443,7 @@ class CurlDownloader
                 } else {
                     call_user_func($job['resolve'], $response);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 if ($e instanceof TransportException && $headers) {
                     $e->setHeaders($headers);
                     $e->setStatusCode($statusCode);
@@ -612,7 +615,7 @@ class CurlDownloader
      * @param  Job                $job
      * @return void
      */
-    private function rejectJob(array $job, \Exception $e)
+    private function rejectJob(array $job, Exception $e)
     {
         if (is_resource($job['headerHandle'])) {
             fclose($job['headerHandle']);
@@ -633,7 +636,7 @@ class CurlDownloader
     private function checkCurlResult($code)
     {
         if ($code != CURLM_OK && $code != CURLM_CALL_MULTI_PERFORM) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 isset($this->multiErrors[$code])
                 ? "cURL error: {$code} ({$this->multiErrors[$code][0]}): cURL message: {$this->multiErrors[$code][1]}"
                 : 'Unexpected cURL error: ' . $code

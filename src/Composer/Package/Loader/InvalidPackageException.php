@@ -12,10 +12,11 @@
 
 namespace Composer\Package\Loader;
 
+use Exception;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class InvalidPackageException extends \Exception
+class InvalidPackageException extends Exception
 {
     /** @var string[] */
     private $errors;

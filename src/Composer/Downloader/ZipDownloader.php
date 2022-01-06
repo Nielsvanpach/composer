@@ -12,6 +12,11 @@
 
 namespace Composer\Downloader;
 
+use RuntimeException;
+use Throwable;
+use UnexpectedValueException;
+use ErrorException;
+use function React\Promise\resolve;
 use Composer\Package\PackageInterface;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
@@ -64,7 +69,7 @@ class ZipDownloader extends ArchiveDownloader
         }
 
         if (null === self::$hasZipArchive) {
-            self::$hasZipArchive = class_exists('ZipArchive');
+            self::$hasZipArchive = class_exists(\ZipArchive::class);
         }
 
         if (!self::$hasZipArchive && !self::$unzipCommands) {
@@ -76,7 +81,7 @@ class ZipDownloader extends ArchiveDownloader
                 $error = "The zip extension and unzip/7z commands are both missing, skipping.\n" . $iniMessage;
             }
 
-            throw new \RuntimeException($error);
+            throw new RuntimeException($error);
         }
 
         if (null === self::$isWindows) {
@@ -151,16 +156,16 @@ class ZipDownloader extends ArchiveDownloader
             return $promise->then(function ($process) use ($tryFallback, $command, $package, $file) {
                 if (!$process->isSuccessful()) {
                     if (isset($this->cleanupExecuted[$package->getName()])) {
-                        throw new \RuntimeException('Failed to extract '.$package->getName().' as the installation was aborted by another package operation.');
+                        throw new RuntimeException('Failed to extract '.$package->getName().' as the installation was aborted by another package operation.');
                     }
 
                     $output = $process->getErrorOutput();
                     $output = str_replace(', '.$file.'.zip or '.$file.'.ZIP', '', $output);
 
-                    return $tryFallback(new \RuntimeException('Failed to extract '.$package->getName().': ('.$process->getExitCode().') '.$command."\n\n".$output));
+                    return $tryFallback(new RuntimeException('Failed to extract '.$package->getName().': ('.$process->getExitCode().') '.$command."\n\n".$output));
                 }
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return $tryFallback($e);
         }
     }
@@ -184,16 +189,16 @@ class ZipDownloader extends ArchiveDownloader
                 if (true === $extractResult) {
                     $zipArchive->close();
 
-                    return \React\Promise\resolve();
+                    return resolve();
                 }
 
-                $processError = new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
+                $processError = new RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
             } else {
-                $processError = new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n"), $retval);
+                $processError = new UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n"), $retval);
             }
-        } catch (\ErrorException $e) {
-            $processError = new \RuntimeException('The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): '.$e->getMessage(), 0, $e);
-        } catch (\Throwable $e) {
+        } catch (ErrorException $e) {
+            $processError = new RuntimeException('The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): '.$e->getMessage(), 0, $e);
+        } catch (Throwable $e) {
             $processError = $e;
         }
 

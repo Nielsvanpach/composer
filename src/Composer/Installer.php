@@ -12,6 +12,9 @@
 
 namespace Composer;
 
+use Exception;
+use RuntimeException;
+use Seld\JsonLint\ParsingException;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Console\GithubActionError;
 use Composer\DependencyResolver\DefaultPolicy;
@@ -222,7 +225,7 @@ class Installer
     /**
      * Run installation (or update)
      *
-     * @throws \Exception
+     * @throws Exception
      * @return int        0 on success or a positive error code on failure
      * @phpstan-return self::ERROR_*
      */
@@ -236,7 +239,7 @@ class Installer
         gc_disable();
 
         if ($this->updateAllowList && $this->updateMirrors) {
-            throw new \RuntimeException("The installer options updateMirrors and updateAllowList are mutually exclusive.");
+            throw new RuntimeException("The installer options updateMirrors and updateAllowList are mutually exclusive.");
         }
 
         $isFreshInstall = $this->repositoryManager->getLocalRepository()->isFresh();
@@ -283,7 +286,7 @@ class Installer
             if ($res !== 0) {
                 return $res;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($this->executeOperations && $this->install && $this->config->get('notify-on-install')) {
                 $this->installationManager->notifyInstalls($this->io);
             }
@@ -396,7 +399,7 @@ class Installer
             if ($this->locker->isLocked()) {
                 $lockedRepository = $this->locker->getLockedRepository(true);
             }
-        } catch (\Seld\JsonLint\ParsingException $e) {
+        } catch (ParsingException $e) {
             if ($this->updateAllowList || $this->updateMirrors) {
                 // in case we are doing a partial update or updating mirrors, the lock file is needed so we error
                 throw $e;
@@ -1331,7 +1334,7 @@ class Installer
     public function setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
     {
         if (!in_array($updateAllowTransitiveDependencies, array(Request::UPDATE_ONLY_LISTED, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS), true)) {
-            throw new \RuntimeException("Invalid value for updateAllowTransitiveDependencies supplied");
+            throw new RuntimeException("Invalid value for updateAllowTransitiveDependencies supplied");
         }
 
         $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;

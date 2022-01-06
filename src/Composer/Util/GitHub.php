@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use RuntimeException;
+use Exception;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
@@ -75,8 +77,8 @@ class GitHub
      *
      * @param  string                        $originUrl The host this GitHub instance is located at
      * @param  string                        $message   The reason this authorization is required
-     * @throws \RuntimeException
-     * @throws TransportException|\Exception
+     * @throws RuntimeException
+     * @throws TransportException|Exception
      * @return bool                          true on success
      */
     public function authorizeOAuthInteractively($originUrl, $message = null)

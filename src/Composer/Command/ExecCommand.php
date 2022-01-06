@@ -12,6 +12,8 @@
 
 namespace Composer\Command;
 
+use RuntimeException;
+use Exception;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -63,7 +65,7 @@ EOT
             }, $composer->getPackage()->getBinaries()));
 
             if (!$bins) {
-                throw new \RuntimeException("No binaries found in composer.json or in bin-dir ($binDir)");
+                throw new RuntimeException("No binaries found in composer.json or in bin-dir ($binDir)");
             }
 
             $this->getIO()->write(
@@ -101,8 +103,8 @@ EOT
         if (getcwd() !== $this->getApplication()->getInitialWorkingDirectory()) {
             try {
                 chdir($this->getApplication()->getInitialWorkingDirectory());
-            } catch (\Exception $e) {
-                throw new \RuntimeException('Could not switch back to working directory "'.$this->getApplication()->getInitialWorkingDirectory().'"', 0, $e);
+            } catch (Exception $e) {
+                throw new RuntimeException('Could not switch back to working directory "'.$this->getApplication()->getInitialWorkingDirectory().'"', 0, $e);
             }
         }
 

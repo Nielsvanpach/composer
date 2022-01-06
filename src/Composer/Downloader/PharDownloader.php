@@ -12,6 +12,8 @@
 
 namespace Composer\Downloader;
 
+use Phar;
+use function React\Promise\resolve;
 use Composer\Package\PackageInterface;
 
 /**
@@ -27,7 +29,7 @@ class PharDownloader extends ArchiveDownloader
     protected function extract(PackageInterface $package, $file, $path)
     {
         // Can throw an UnexpectedValueException
-        $archive = new \Phar($file);
+        $archive = new Phar($file);
         $archive->extractTo($path, null, true);
         /* TODO: handle openssl signed phars
          * https://github.com/composer/composer/pull/33#issuecomment-2250768
@@ -35,6 +37,6 @@ class PharDownloader extends ArchiveDownloader
          * http://blog.kotowicz.net/2010/08/hardening-php-how-to-securely-include.html
          */
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 }

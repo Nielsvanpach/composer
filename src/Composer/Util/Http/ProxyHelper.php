@@ -12,6 +12,7 @@
 
 namespace Composer\Util\Http;
 
+use RuntimeException;
 /**
  * Proxy discovery and helper class
  *
@@ -25,7 +26,7 @@ class ProxyHelper
      *
      * @return array{string|null, string|null, string|null} httpProxy, httpsProxy, noProxy values
      *
-     * @throws \RuntimeException on malformed url
+     * @throws RuntimeException on malformed url
      */
     public static function getProxyData()
     {
@@ -130,7 +131,7 @@ class ProxyHelper
      *
      * @param  string            $proxyUrl
      * @param  string            $envName
-     * @throws \RuntimeException on malformed url
+     * @throws RuntimeException on malformed url
      * @return string            The formatted proxy url
      */
     private static function checkProxy($proxyUrl, $envName)
@@ -140,14 +141,14 @@ class ProxyHelper
 
         // We need parse_url to have identified a host
         if (!isset($proxy['host'])) {
-            throw new \RuntimeException($error);
+            throw new RuntimeException($error);
         }
 
         $proxyUrl = self::formatParsedUrl($proxy, true);
 
         // We need a port because streams and curl use different defaults
         if (!parse_url($proxyUrl, PHP_URL_PORT)) {
-            throw new \RuntimeException($error);
+            throw new RuntimeException($error);
         }
 
         return $proxyUrl;

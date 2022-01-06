@@ -12,6 +12,8 @@
 
 namespace Composer\Downloader;
 
+use RuntimeException;
+use function React\Promise\resolve;
 use Composer\Package\PackageInterface;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
@@ -33,24 +35,24 @@ class GzipDownloader extends ArchiveDownloader
             $command = 'gzip -cd -- ' . ProcessExecutor::escape($file) . ' > ' . ProcessExecutor::escape($targetFilepath);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
-                return \React\Promise\resolve();
+                return resolve();
             }
 
             if (extension_loaded('zlib')) {
                 // Fallback to using the PHP extension.
                 $this->extractUsingExt($file, $targetFilepath);
 
-                return \React\Promise\resolve();
+                return resolve();
             }
 
             $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
-            throw new \RuntimeException($processError);
+            throw new RuntimeException($processError);
         }
 
         // Windows version of PHP has built-in support of gzip functions
         $this->extractUsingExt($file, $targetFilepath);
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**

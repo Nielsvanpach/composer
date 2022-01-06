@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use Exception;
+use Throwable;
 use Composer\Config;
 use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
@@ -213,7 +215,7 @@ class RemoteFilesystem
      * @param string  $fileName          the local filename
      * @param bool    $progress          Display the progression
      *
-     * @throws TransportException|\Exception
+     * @throws TransportException|Exception
      * @throws TransportException            When the file could not be downloaded
      *
      * @return bool|string
@@ -322,7 +324,7 @@ class RemoteFilesystem
                 $e->setStatusCode(self::findStatusCode($http_response_header));
                 try {
                     $e->setResponse($this->decodeResult($result, $http_response_header));
-                } catch (\Exception $discarded) {
+                } catch (Exception $discarded) {
                     $e->setResponse($this->normalizeResult($result));
                 }
 
@@ -330,7 +332,7 @@ class RemoteFilesystem
 
                 throw $e;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
                 $e->setStatusCode(self::findStatusCode($http_response_header));
@@ -423,7 +425,7 @@ class RemoteFilesystem
         if ($result && extension_loaded('zlib') && strpos($fileUrl, 'http') === 0 && !$hasFollowedRedirect) {
             try {
                 $result = $this->decodeResult($result, $http_response_header);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 if ($this->degradedMode) {
                     throw $e;
                 }
@@ -524,7 +526,7 @@ class RemoteFilesystem
                 // passing `null` to file_get_contents will convert `null` to `0` and return 0 bytes
                 $result = file_get_contents($fileUrl, false, $context);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
         }
 
         if ($maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {

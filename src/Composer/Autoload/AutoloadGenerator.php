@@ -12,6 +12,10 @@
 
 namespace Composer\Autoload;
 
+use Seld\JsonLint\ParsingException;
+use Composer\InstalledVersions;
+use InvalidArgumentException;
+use RuntimeException;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
@@ -161,7 +165,7 @@ class AutoloadGenerator
      * @param bool $scanPsrPackages
      * @param string $suffix
      * @return int
-     * @throws \Seld\JsonLint\ParsingException
+     * @throws ParsingException
      */
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, $targetDir, $scanPsrPackages = false, $suffix = '')
     {
@@ -365,7 +369,7 @@ EOF;
             );
         }
 
-        $classMap['Composer\\InstalledVersions'] = "\$vendorDir . '/composer/InstalledVersions.php',\n";
+        $classMap[InstalledVersions::class] = "\$vendorDir . '/composer/InstalledVersions.php',\n";
         ksort($classMap);
         foreach ($classMap as $class => $code) {
             $classmapFile .= '    '.var_export($class, true).' => '.$code;
@@ -516,7 +520,7 @@ EOF;
 
     /**
      * @return void
-     * @throws \InvalidArgumentException Throws an exception, if the package has illegal settings.
+     * @throws InvalidArgumentException Throws an exception, if the package has illegal settings.
      */
     protected function validatePackage(PackageInterface $package)
     {
@@ -524,12 +528,12 @@ EOF;
         if (!empty($autoload['psr-4']) && null !== $package->getTargetDir()) {
             $name = $package->getName();
             $package->getTargetDir();
-            throw new \InvalidArgumentException("PSR-4 autoloading is incompatible with the target-dir property, remove the target-dir in package '$name'.");
+            throw new InvalidArgumentException("PSR-4 autoloading is incompatible with the target-dir property, remove the target-dir in package '$name'.");
         }
         if (!empty($autoload['psr-4'])) {
             foreach ($autoload['psr-4'] as $namespace => $dirs) {
                 if ($namespace !== '' && '\\' !== substr($namespace, -1)) {
-                    throw new \InvalidArgumentException("psr-4 namespaces must end with a namespace separator, '$namespace' does not, use '$namespace\\'.");
+                    throw new InvalidArgumentException("psr-4 namespaces must end with a namespace separator, '$namespace' does not, use '$namespace\\'.");
                 }
             }
         }
@@ -615,7 +619,7 @@ EOF;
             foreach ($autoloads['classmap'] as $dir) {
                 try {
                     $loader->addClassMap($this->generateClassMap($dir, $excluded, null, null, false, $scannedFiles));
-                } catch (\RuntimeException $e) {
+                } catch (RuntimeException $e) {
                     $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
                 }
             }

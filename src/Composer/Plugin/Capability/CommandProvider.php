@@ -12,6 +12,7 @@
 
 namespace Composer\Plugin\Capability;
 
+use Composer\Command\BaseCommand;
 /**
  * Commands Provider Interface
  *
@@ -27,7 +28,7 @@ interface CommandProvider extends Capability
     /**
      * Retrieves an array of commands
      *
-     * @return \Composer\Command\BaseCommand[]
+     * @return BaseCommand[]
      */
     public function getCommands();
 }

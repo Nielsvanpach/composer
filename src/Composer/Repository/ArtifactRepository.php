@@ -12,6 +12,13 @@
 
 namespace Composer\Repository;
 
+use RuntimeException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RegexIterator;
+use SplFileInfo;
+use Exception;
+use UnexpectedValueException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
@@ -42,7 +49,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     {
         parent::__construct();
         if (!extension_loaded('zip')) {
-            throw new \RuntimeException('The artifact repository requires PHP\'s zip extension');
+            throw new RuntimeException('The artifact repository requires PHP\'s zip extension');
         }
 
         $this->loader = new ArrayLoader();
@@ -77,9 +84,9 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     {
         $io = $this->io;
 
-        $directory = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS);
-        $iterator = new \RecursiveIteratorIterator($directory);
-        $regex = new \RegexIterator($iterator, '/^.+\.(zip|phar|tar|gz|tgz)$/i');
+        $directory = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::FOLLOW_SYMLINKS);
+        $iterator = new RecursiveIteratorIterator($directory);
+        $regex = new RegexIterator($iterator, '/^.+\.(zip|phar|tar|gz|tgz)$/i');
         foreach ($regex as $file) {
             /* @var $file \SplFileInfo */
             if (!$file->isFile()) {
@@ -102,7 +109,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * @return ?BasePackage
      */
-    private function getComposerInformation(\SplFileInfo $file)
+    private function getComposerInformation(SplFileInfo $file)
     {
         $json = null;
         $fileType = null;
@@ -112,7 +119,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         } elseif ($fileExtension === 'zip') {
             $fileType = 'zip';
         } else {
-            throw new \RuntimeException('Files with "'.$fileExtension.'" extensions aren\'t supported. Only ZIP and TAR/TAR.GZ/TGZ archives are supported.');
+            throw new RuntimeException('Files with "'.$fileExtension.'" extensions aren\'t supported. Only ZIP and TAR/TAR.GZ/TGZ archives are supported.');
         }
 
         try {
@@ -121,7 +128,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
             } else {
                 $json = Zip::getComposerJson($file->getPathname());
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->io->write('Failed loading package '.$file->getPathname().': '.$exception->getMessage(), false, IOInterface::VERBOSE);
         }
 
@@ -138,8 +145,8 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
         try {
             $package = $this->loader->load($package);
-        } catch (\UnexpectedValueException $e) {
-            throw new \UnexpectedValueException('Failed loading package in '.$file.': '.$e->getMessage(), 0, $e);
+        } catch (UnexpectedValueException $e) {
+            throw new UnexpectedValueException('Failed loading package in '.$file.': '.$e->getMessage(), 0, $e);
         }
 
         return $package;

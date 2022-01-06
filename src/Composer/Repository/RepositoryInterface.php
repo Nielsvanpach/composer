@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Countable;
 use Composer\Package\PackageInterface;
 use Composer\Package\BasePackage;
 use Composer\Semver\Constraint\ConstraintInterface;
@@ -23,7 +24,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-interface RepositoryInterface extends \Countable
+interface RepositoryInterface extends Countable
 {
     const SEARCH_FULLTEXT = 0;
     const SEARCH_NAME = 1;

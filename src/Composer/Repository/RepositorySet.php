@@ -12,6 +12,8 @@
 
 namespace Composer\Repository;
 
+use RuntimeException;
+use LogicException;
 use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Pool;
@@ -146,7 +148,7 @@ class RepositorySet
     public function addRepository(RepositoryInterface $repo)
     {
         if ($this->locked) {
-            throw new \RuntimeException("Pool has already been created from this repository set, it cannot be modified anymore.");
+            throw new RuntimeException("Pool has already been created from this repository set, it cannot be modified anymore.");
         }
 
         if ($repo instanceof CompositeRepository) {
@@ -252,7 +254,7 @@ class RepositorySet
 
         foreach ($this->repositories as $repo) {
             if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
-                throw new \LogicException('The pool can not accept packages from an installed repository');
+                throw new LogicException('The pool can not accept packages from an installed repository');
             }
         }
 
@@ -270,7 +272,7 @@ class RepositorySet
     {
         foreach ($this->repositories as $repo) {
             if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
-                throw new \LogicException('The pool can not accept packages from an installed repository');
+                throw new LogicException('The pool can not accept packages from an installed repository');
             }
         }
 
@@ -322,7 +324,7 @@ class RepositorySet
 
         foreach ($packageNames as $packageName) {
             if (PlatformRepository::isPlatformPackage($packageName)) {
-                throw new \LogicException('createPoolForPackage(s) can not be used for platform packages, as they are never loaded by the PoolBuilder which expects them to be fixed. Use createPoolWithAllPackages or pass in a proper request with the platform packages you need fixed in it.');
+                throw new LogicException('createPoolForPackage(s) can not be used for platform packages, as they are never loaded by the PoolBuilder which expects them to be fixed. Use createPoolWithAllPackages or pass in a proper request with the platform packages you need fixed in it.');
             }
 
             $request->requireName($packageName);

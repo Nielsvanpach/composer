@@ -12,6 +12,8 @@
 
 namespace Composer\Downloader;
 
+use RuntimeException;
+use function React\Promise\resolve;
 use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\Svn as SvnUtil;
@@ -36,10 +38,10 @@ class SvnDownloader extends VcsDownloader
         SvnUtil::cleanEnv();
         $util = new SvnUtil($url, $this->io, $this->config, $this->process);
         if (null === $util->binaryVersion()) {
-            throw new \RuntimeException('svn was not found in your PATH, skipping source download');
+            throw new RuntimeException('svn was not found in your PATH, skipping source download');
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -61,7 +63,7 @@ class SvnDownloader extends VcsDownloader
         $this->io->writeError(" Checking out ".$package->getSourceReference());
         $this->execute($package, $url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -73,7 +75,7 @@ class SvnDownloader extends VcsDownloader
         $ref = $target->getSourceReference();
 
         if (!$this->hasMetadataRepository($path)) {
-            throw new \RuntimeException('The .svn directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
+            throw new RuntimeException('The .svn directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
         $util = new SvnUtil($url, $this->io, $this->config, $this->process);
@@ -85,7 +87,7 @@ class SvnDownloader extends VcsDownloader
         $this->io->writeError(" Checking out " . $ref);
         $this->execute($target, $url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -111,7 +113,7 @@ class SvnDownloader extends VcsDownloader
      * @param  string            $url     SVN url
      * @param  string            $cwd     Working directory
      * @param  string            $path    Target for a checkout
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return string
      */
     protected function execute(PackageInterface $package, $baseUrl, $command, $url, $cwd = null, $path = null)
@@ -120,8 +122,8 @@ class SvnDownloader extends VcsDownloader
         $util->setCacheCredentials($this->cacheCredentials);
         try {
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
-        } catch (\RuntimeException $e) {
-            throw new \RuntimeException(
+        } catch (RuntimeException $e) {
+            throw new RuntimeException(
                 $package->getPrettyName().' could not be downloaded, '.$e->getMessage()
             );
         }
@@ -133,7 +135,7 @@ class SvnDownloader extends VcsDownloader
     protected function cleanChanges(PackageInterface $package, $path, $update)
     {
         if (!$changes = $this->getLocalChanges($package, $path)) {
-            return \React\Promise\resolve();
+            return resolve();
         }
 
         if (!$this->io->isInteractive()) {
@@ -167,7 +169,7 @@ class SvnDownloader extends VcsDownloader
                     break 2;
 
                 case 'n':
-                    throw new \RuntimeException('Update aborted');
+                    throw new RuntimeException('Update aborted');
 
                 case 'v':
                     $this->io->writeError($changes);
@@ -185,7 +187,7 @@ class SvnDownloader extends VcsDownloader
             }
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -197,7 +199,7 @@ class SvnDownloader extends VcsDownloader
             // retrieve the svn base url from the checkout folder
             $command = sprintf('svn info --non-interactive --xml -- %s', ProcessExecutor::escape($path));
             if (0 !== $this->process->execute($command, $output, $path)) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()
                 );
             }
@@ -206,7 +208,7 @@ class SvnDownloader extends VcsDownloader
             if (Preg::isMatch($urlPattern, $output, $matches)) {
                 $baseUrl = $matches[1];
             } else {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     'Unable to determine svn url for path '. $path
                 );
             }
@@ -221,8 +223,8 @@ class SvnDownloader extends VcsDownloader
             $util->setCacheCredentials($this->cacheCredentials);
             try {
                 return $util->executeLocal($command, $path, null, $this->io->isVerbose());
-            } catch (\RuntimeException $e) {
-                throw new \RuntimeException(
+            } catch (RuntimeException $e) {
+                throw new RuntimeException(
                     'Failed to execute ' . $command . "\n\n".$e->getMessage()
                 );
             }
@@ -239,10 +241,10 @@ class SvnDownloader extends VcsDownloader
     protected function discardChanges($path)
     {
         if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {
-            throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
+            throw new RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**

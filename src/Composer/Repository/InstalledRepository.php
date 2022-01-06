@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use LogicException;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -272,6 +273,6 @@ class InstalledRepository extends CompositeRepository
             return;
         }
 
-        throw new \LogicException('An InstalledRepository can not contain a repository of type '.get_class($repository).' ('.$repository->getRepoName().')');
+        throw new LogicException('An InstalledRepository can not contain a repository of type '.get_class($repository).' ('.$repository->getRepoName().')');
     }
 }

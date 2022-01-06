@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use LogicException;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
@@ -327,7 +328,7 @@ class PoolOptimizer
     {
         // We are not allowed to remove packages if they have been marked as irremovable
         if (isset($this->irremovablePackages[$id])) {
-            throw new \LogicException('Attempted removing a package which was previously marked irremovable');
+            throw new LogicException('Attempted removing a package which was previously marked irremovable');
         }
 
         $this->packagesToRemove[$id] = true;

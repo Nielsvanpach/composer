@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use RuntimeException;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  *
@@ -30,7 +31,7 @@ class MultiConflictRule extends Rule
         parent::__construct($reason, $reasonData);
 
         if (\count($literals) < 3) {
-            throw new \RuntimeException("multi conflict rule requires at least 3 literals");
+            throw new RuntimeException("multi conflict rule requires at least 3 literals");
         }
 
         // sort all packages ascending by id
@@ -84,11 +85,11 @@ class MultiConflictRule extends Rule
 
     /**
      * @return never
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function disable()
     {
-        throw new \RuntimeException("Disabling multi conflict rules is not possible. Please contact composer at https://github.com/composer/composer to let us debug what lead to this situation.");
+        throw new RuntimeException("Disabling multi conflict rules is not possible. Please contact composer at https://github.com/composer/composer to let us debug what lead to this situation.");
     }
 
     /**

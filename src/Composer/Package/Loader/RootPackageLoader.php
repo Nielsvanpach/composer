@@ -12,6 +12,9 @@
 
 namespace Composer\Package\Loader;
 
+use RuntimeException;
+use LogicException;
+use UnexpectedValueException;
 use Composer\Package\BasePackage;
 use Composer\Config;
 use Composer\IO\IOInterface;
@@ -69,16 +72,16 @@ class RootPackageLoader extends ArrayLoader
      *
      * @phpstan-param class-string<PackageClass> $class
      */
-    public function load(array $config, $class = 'Composer\Package\RootPackage', $cwd = null)
+    public function load(array $config, $class = RootPackage::class, $cwd = null)
     {
-        if ($class !== 'Composer\Package\RootPackage') {
+        if ($class !== RootPackage::class) {
             trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
         }
 
         if (!isset($config['name'])) {
             $config['name'] = '__root__';
         } elseif ($err = ValidatingArrayLoader::hasPackageNamingError($config['name'])) {
-            throw new \RuntimeException('Your package name '.$err);
+            throw new RuntimeException('Your package name '.$err);
         }
         $autoVersioned = false;
         if (!isset($config['version'])) {
@@ -124,7 +127,7 @@ class RootPackageLoader extends ArrayLoader
         }
 
         if (!$realPackage instanceof RootPackage) {
-            throw new \LogicException('Expecting a Composer\Package\RootPackage at this point');
+            throw new LogicException('Expecting a Composer\Package\RootPackage at this point');
         }
 
         if ($autoVersioned) {
@@ -151,7 +154,7 @@ class RootPackageLoader extends ArrayLoader
                 $references = self::extractReferences($links, $references);
 
                 if (isset($links[$config['name']])) {
-                    throw new \RuntimeException(sprintf('Root package \'%s\' cannot require itself in its composer.json' . PHP_EOL .
+                    throw new RuntimeException(sprintf('Root package \'%s\' cannot require itself in its composer.json' . PHP_EOL .
                                 'Did you accidentally name your root package after an external package?', $config['name']));
                 }
             }
@@ -161,7 +164,7 @@ class RootPackageLoader extends ArrayLoader
             if (isset($config[$linkType])) {
                 foreach ($config[$linkType] as $linkName => $constraint) {
                     if ($err = ValidatingArrayLoader::hasPackageNamingError($linkName, true)) {
-                        throw new \RuntimeException($linkType.'.'.$err);
+                        throw new RuntimeException($linkType.'.'.$err);
                     }
                 }
             }
@@ -205,7 +208,7 @@ class RootPackageLoader extends ArrayLoader
                     'alias_normalized' => $this->versionParser->normalize($match[2], $reqVersion),
                 );
             } elseif (strpos($reqVersion, ' as ') !== false) {
-                throw new \UnexpectedValueException('Invalid alias definition in "'.$reqName.'": "'.$reqVersion.'". Aliases should be in the form "exact-version as other-exact-version".');
+                throw new UnexpectedValueException('Invalid alias definition in "'.$reqName.'": "'.$reqVersion.'". Aliases should be in the form "exact-version as other-exact-version".');
             }
         }
 

@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Version;
 
+use Exception;
 use Composer\Config;
 use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\HgDriver;
@@ -219,7 +220,7 @@ class VersionGuesser
                 $version = $this->versionParser->normalize(trim($output));
 
                 return array('version' => $version, 'pretty_version' => trim($output));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
         }
 
@@ -372,7 +373,7 @@ class VersionGuesser
             try {
                 $version = $this->versionParser->normalize(trim($output));
                 $prettyVersion = trim($output);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
         }
 

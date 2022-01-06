@@ -12,6 +12,10 @@
 
 namespace Composer\Json;
 
+use InvalidArgumentException;
+use RuntimeException;
+use Exception;
+use UnexpectedValueException;
 use Composer\Pcre\Preg;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
@@ -53,14 +57,14 @@ class JsonFile
      * @param  string                    $path           path to a lockfile
      * @param  ?HttpDownloader           $httpDownloader required for loading http/https json files
      * @param  ?IOInterface              $io
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function __construct($path, HttpDownloader $httpDownloader = null, IOInterface $io = null)
     {
         $this->path = $path;
 
         if (null === $httpDownloader && Preg::isMatch('{^https?://}i', $path)) {
-            throw new \InvalidArgumentException('http urls require a HttpDownloader instance to be passed');
+            throw new InvalidArgumentException('http urls require a HttpDownloader instance to be passed');
         }
         $this->httpDownloader = $httpDownloader;
         $this->io = $io;
@@ -88,7 +92,7 @@ class JsonFile
      * Reads json file.
      *
      * @throws ParsingException
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return mixed
      */
     public function read()
@@ -108,9 +112,9 @@ class JsonFile
                 $json = file_get_contents($this->path);
             }
         } catch (TransportException $e) {
-            throw new \RuntimeException($e->getMessage(), 0, $e);
-        } catch (\Exception $e) {
-            throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
+            throw new RuntimeException($e->getMessage(), 0, $e);
+        } catch (Exception $e) {
+            throw new RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
         }
 
         return static::parseJson($json, $this->path);
@@ -121,7 +125,7 @@ class JsonFile
      *
      * @param  mixed[]                              $hash    writes hash into json file
      * @param  int                                  $options json_encode options
-     * @throws \UnexpectedValueException|\Exception
+     * @throws UnexpectedValueException|Exception
      * @return void
      */
     public function write(array $hash, $options = JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
@@ -135,12 +139,12 @@ class JsonFile
         $dir = dirname($this->path);
         if (!is_dir($dir)) {
             if (file_exists($dir)) {
-                throw new \UnexpectedValueException(
+                throw new UnexpectedValueException(
                     realpath($dir).' exists and is not a directory.'
                 );
             }
             if (!@mkdir($dir, 0777, true)) {
-                throw new \UnexpectedValueException(
+                throw new UnexpectedValueException(
                     $dir.' does not exist and could not be created.'
                 );
             }
@@ -151,7 +155,7 @@ class JsonFile
             try {
                 $this->filePutContentsIfModified($this->path, static::encode($hash, $options). ($options & JSON_PRETTY_PRINT ? "\n" : ''));
                 break;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 if ($retries) {
                     usleep(500000);
                     continue;
@@ -253,7 +257,7 @@ class JsonFile
      * Throws an exception according to a given code with a customized message
      *
      * @param  int               $code return code of json_last_error function
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return void
      */
     private static function throwEncodeError($code)
@@ -275,7 +279,7 @@ class JsonFile
                 $msg = 'Unknown error';
         }
 
-        throw new \RuntimeException('JSON encoding failed: '.$msg);
+        throw new RuntimeException('JSON encoding failed: '.$msg);
     }
 
     /**
@@ -305,7 +309,7 @@ class JsonFile
      *
      * @param  string                    $json
      * @param  string                    $file
-     * @throws \UnexpectedValueException
+     * @throws UnexpectedValueException
      * @throws ParsingException
      * @return bool                      true on success
      */
@@ -315,7 +319,7 @@ class JsonFile
         $result = $parser->lint($json);
         if (null === $result) {
             if (defined('JSON_ERROR_UTF8') && JSON_ERROR_UTF8 === json_last_error()) {
-                throw new \UnexpectedValueException('"'.$file.'" is not UTF-8, could not parse as JSON');
+                throw new UnexpectedValueException('"'.$file.'" is not UTF-8, could not parse as JSON');
             }
 
             return true;

@@ -12,10 +12,11 @@
 
 namespace Composer\Downloader;
 
+use RuntimeException;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class TransportException extends \RuntimeException
+class TransportException extends RuntimeException
 {
     /** @var ?array<string> */
     protected $headers;

@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use RuntimeException;
 use Composer\CaBundle\CaBundle;
 use Composer\Pcre\Preg;
 
@@ -140,7 +141,7 @@ final class TlsHelper
     {
         $pubkey = openssl_get_publickey($certificate);
         if ($pubkey === false) {
-            throw new \RuntimeException('Failed to retrieve the public key from certificate');
+            throw new RuntimeException('Failed to retrieve the public key from certificate');
         }
         $pubkeydetails = openssl_pkey_get_details($pubkey);
         $pubkeypem = $pubkeydetails['key'];

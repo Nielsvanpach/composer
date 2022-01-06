@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use LogicException;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
@@ -311,7 +312,7 @@ class ArrayRepository implements RepositoryInterface
         }
 
         if (null === $this->packages) {
-            throw new \LogicException('initialize failed to initialize the packages array');
+            throw new LogicException('initialize failed to initialize the packages array');
         }
 
         return $this->packages;

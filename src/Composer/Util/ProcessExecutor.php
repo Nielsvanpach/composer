@@ -12,6 +12,9 @@
 
 namespace Composer\Util;
 
+use LogicException;
+use Exception;
+use Throwable;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Symfony\Component\Process\Process;
@@ -143,7 +146,7 @@ class ProcessExecutor
     public function executeAsync($command, $cwd = null)
     {
         if (!$this->allowAsync) {
-            throw new \LogicException('You must use the ProcessExecutor instance which is part of a Composer\Loop instance to be able to run async processes');
+            throw new LogicException('You must use the ProcessExecutor instance which is part of a Composer\Loop instance to be able to run async processes');
         }
 
         $job = array(
@@ -171,7 +174,7 @@ class ProcessExecutor
                 if (defined('SIGINT')) {
                     $job['process']->signal(SIGINT);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // signal can throw in various conditions, but we don't care if it fails
             }
             $job['process']->stop(1);
@@ -232,7 +235,7 @@ class ProcessExecutor
             } else {
                 $process = new Process($command, $cwd, null, null, static::getTimeout());
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             call_user_func($job['reject'], $e);
 
             return;
@@ -242,7 +245,7 @@ class ProcessExecutor
 
         try {
             $process->start();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             call_user_func($job['reject'], $e);
 
             return;

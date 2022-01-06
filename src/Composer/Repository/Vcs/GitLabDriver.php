@@ -12,6 +12,9 @@
 
 namespace Composer\Repository\Vcs;
 
+use InvalidArgumentException;
+use RuntimeException;
+use DateTime;
 use Composer\Config;
 use Composer\Cache;
 use Composer\IO\IOInterface;
@@ -94,7 +97,7 @@ class GitLabDriver extends VcsDriver
     public function initialize()
     {
         if (!Preg::isMatch(self::URL_REGEX, $this->url, $match)) {
-            throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
+            throw new InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
         }
 
         $guessedDomain = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
@@ -110,7 +113,7 @@ class GitLabDriver extends VcsDriver
         if ($protocol = $this->config->get('gitlab-protocol')) {
             // https treated as a synonym for http.
             if (!in_array($protocol, array('git', 'http', 'https'))) {
-                throw new \RuntimeException('gitlab-protocol must be one of git, http.');
+                throw new RuntimeException('gitlab-protocol must be one of git, http.');
             }
             $this->protocol = $protocol === 'git' ? 'ssh' : 'http';
         }
@@ -223,10 +226,10 @@ class GitLabDriver extends VcsDriver
         }
 
         if (isset($this->commits[$identifier])) {
-            return new \DateTime($this->commits[$identifier]['committed_date']);
+            return new DateTime($this->commits[$identifier]['committed_date']);
         }
 
-        return new \DateTime();
+        return new DateTime();
     }
 
     /**
@@ -400,7 +403,7 @@ class GitLabDriver extends VcsDriver
      * @phpstan-impure
      *
      * @return true
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function attemptCloneFallback()
     {
@@ -417,7 +420,7 @@ class GitLabDriver extends VcsDriver
             $this->setupGitDriver($url);
 
             return true;
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $this->gitDriver = null;
 
             $this->io->writeError('<error>Failed to clone the '.$url.' repository, try running in interactive mode so that you can enter your credentials</error>');

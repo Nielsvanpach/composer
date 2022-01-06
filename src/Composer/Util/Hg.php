@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use RuntimeException;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
@@ -25,17 +26,17 @@ class Hg
     private static $version = false;
 
     /**
-     * @var \Composer\IO\IOInterface
+     * @var IOInterface
      */
     private $io;
 
     /**
-     * @var \Composer\Config
+     * @var Config
      */
     private $config;
 
     /**
-     * @var \Composer\Util\ProcessExecutor
+     * @var ProcessExecutor
      */
     private $process;
 
@@ -92,10 +93,10 @@ class Hg
     private function throwException($message, $url)
     {
         if (null === self::getVersion($this->process)) {
-            throw new \RuntimeException(Url::sanitize('Failed to clone ' . $url . ', hg was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
+            throw new RuntimeException(Url::sanitize('Failed to clone ' . $url . ', hg was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
         }
 
-        throw new \RuntimeException(Url::sanitize($message));
+        throw new RuntimeException(Url::sanitize($message));
     }
 
     /**

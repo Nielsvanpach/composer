@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use SplDoublyLinkedList;
 /**
  * An extension of SplDoublyLinkedList with seek and removal of current element
  *
@@ -19,9 +20,9 @@ namespace Composer\DependencyResolver;
  * method to set the internal iterator to a particular offset.
  *
  * @author Nils Adermann <naderman@naderman.de>
- * @extends \SplDoublyLinkedList<RuleWatchNode>
+ * @extends SplDoublyLinkedList<RuleWatchNode>
  */
-class RuleWatchChain extends \SplDoublyLinkedList
+class RuleWatchChain extends SplDoublyLinkedList
 {
     /**
      * Moves the internal iterator to the specified offset

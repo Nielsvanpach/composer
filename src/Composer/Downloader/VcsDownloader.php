@@ -12,6 +12,10 @@
 
 namespace Composer\Downloader;
 
+use InvalidArgumentException;
+use Exception;
+use RuntimeException;
+use function React\Promise\resolve;
 use Composer\Config;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
@@ -63,7 +67,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
         if (!$package->getSourceReference()) {
-            throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
+            throw new InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
         $urls = $this->prepareUrls($package->getSourceUrls());
@@ -71,7 +75,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         while ($url = array_shift($urls)) {
             try {
                 return $this->doDownload($package, $path, $url, $prevPackage);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // rethrow phpunit exceptions to avoid hard to debug bug failures
                 if ($e instanceof \PHPUnit\Framework\Exception) {
                     throw $e;
@@ -87,7 +91,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             }
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -104,7 +108,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             $this->cleanChanges($package, $path, false);
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -117,7 +121,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             unset($this->hasCleanedChanges[$prevPackage->getUniqueName()]);
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -126,7 +130,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     public function install(PackageInterface $package, $path)
     {
         if (!$package->getSourceReference()) {
-            throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
+            throw new InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
         $this->io->writeError("  - " . InstallOperation::format($package).': ', false);
@@ -136,7 +140,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             try {
                 $this->doInstall($package, $path, $url);
                 break;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // rethrow phpunit exceptions to avoid hard to debug bug failures
                 if ($e instanceof \PHPUnit\Framework\Exception) {
                     throw $e;
@@ -152,7 +156,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             }
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -161,7 +165,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
         if (!$target->getSourceReference()) {
-            throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');
+            throw new InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');
         }
 
         $this->io->writeError("  - " . UpdateOperation::format($initial, $target).': ', false);
@@ -175,7 +179,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
                 $exception = null;
                 break;
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 // rethrow phpunit exceptions to avoid hard to debug bug failures
                 if ($exception instanceof \PHPUnit\Framework\Exception) {
                     throw $exception;
@@ -216,7 +220,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             throw $exception;
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -230,7 +234,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
         return $promise->then(function ($result) use ($path) {
             if (!$result) {
-                throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
+                throw new RuntimeException('Could not completely delete '.$path.', aborting.');
             }
         });
     }
@@ -262,16 +266,16 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      *
      * @return PromiseInterface
      *
-     * @throws \RuntimeException in case the operation must be aborted
+     * @throws RuntimeException in case the operation must be aborted
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
     {
         // the default implementation just fails if there are any changes, override in child classes to provide stash-ability
         if (null !== $this->getLocalChanges($package, $path)) {
-            throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes.');
+            throw new RuntimeException('Source directory ' . $path . ' has uncommitted changes.');
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -281,7 +285,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      *
      * @return void
      *
-     * @throws \RuntimeException in case the operation must be aborted or the patch does not apply cleanly
+     * @throws RuntimeException in case the operation must be aborted or the patch does not apply cleanly
      */
     protected function reapplyChanges($path)
     {
