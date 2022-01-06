@@ -34,7 +34,6 @@ class RepositoryFactoryTest extends TestCase
             'composer',
             'vcs',
             'package',
-            'pear',
             'git',
             'bitbucket',
             'git-bitbucket',
