@@ -7496,6 +7496,11 @@ parameters:
 			path: ../src/Composer/Util/Zip.php
 
 		-
+			message: "#^Call to function method_exists\\(\\) with 'Composer\\\\\\\\Autoload\\\\\\\\ClassLoader' and 'getRegisteredLoaders' will always evaluate to true\\.$#"
+			count: 1
+			path: ../src/Composer/InstalledVersions.php
+
+		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Autoload\\\\ClassLoader\\|null given\\.$#"
 			count: 2
 			path: ../src/bootstrap.php
