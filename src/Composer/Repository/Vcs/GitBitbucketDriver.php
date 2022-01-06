@@ -12,6 +12,9 @@
 
 namespace Composer\Repository\Vcs;
 
+use DateTime;
+use RuntimeException;
+use LogicException;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Cache;
@@ -250,7 +253,7 @@ class GitBitbucketDriver extends VcsDriver
         );
         $commit = $this->fetchWithOAuthCredentials($resource)->decodeJson();
 
-        return new \DateTime($commit['date']);
+        return new DateTime($commit['date']);
     }
 
     /**
@@ -419,7 +422,7 @@ class GitBitbucketDriver extends VcsDriver
      * @phpstan-impure
      *
      * @return true
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function attemptCloneFallback()
     {
@@ -427,7 +430,7 @@ class GitBitbucketDriver extends VcsDriver
             $this->setupFallbackDriver($this->generateSshUrl());
 
             return true;
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $this->fallbackDriver = null;
 
             $this->io->writeError(
@@ -500,14 +503,14 @@ class GitBitbucketDriver extends VcsDriver
         if (null === $this->rootIdentifier) {
             if (!$this->getRepoData()) {
                 if (!$this->fallbackDriver) {
-                    throw new \LogicException('A fallback driver should be setup if getRepoData returns false');
+                    throw new LogicException('A fallback driver should be setup if getRepoData returns false');
                 }
 
                 return $this->fallbackDriver->getRootIdentifier();
             }
 
             if ($this->vcsType !== 'git') {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     $this->url.' does not appear to be a git repository, use '.
                     $this->cloneHttpsUrl.' but remember that Bitbucket no longer supports the mercurial repositories. '.
                     'https://bitbucket.org/blog/sunsetting-mercurial-support-in-bitbucket'

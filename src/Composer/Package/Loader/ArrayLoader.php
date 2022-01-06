@@ -12,6 +12,11 @@
 
 namespace Composer\Package\Loader;
 
+use UnexpectedValueException;
+use LogicException;
+use DateTime;
+use DateTimeZone;
+use Exception;
 use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
@@ -49,9 +54,9 @@ class ArrayLoader implements LoaderInterface
     /**
      * @inheritDoc
      */
-    public function load(array $config, $class = \Composer\Package\CompletePackage::class)
+    public function load(array $config, $class = CompletePackage::class)
     {
-        if ($class !== \Composer\Package\CompletePackage::class && $class !== \Composer\Package\RootPackage::class) {
+        if ($class !== CompletePackage::class && $class !== RootPackage::class) {
             trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
         }
 
@@ -87,7 +92,7 @@ class ArrayLoader implements LoaderInterface
         $linkCache = array();
 
         foreach ($versions as $version) {
-            $package = $this->createObject($version, \Composer\Package\CompletePackage::class);
+            $package = $this->createObject($version, CompletePackage::class);
 
             $this->configureCachedLinks($linkCache, $package, $version);
             $package = $this->configureObject($package, $version);
@@ -111,10 +116,10 @@ class ArrayLoader implements LoaderInterface
     private function createObject(array $config, $class)
     {
         if (!isset($config['name'])) {
-            throw new \UnexpectedValueException('Unknown package has no name defined ('.json_encode($config).').');
+            throw new UnexpectedValueException('Unknown package has no name defined ('.json_encode($config).').');
         }
         if (!isset($config['version'])) {
-            throw new \UnexpectedValueException('Package '.$config['name'].' has no version defined.');
+            throw new UnexpectedValueException('Package '.$config['name'].' has no version defined.');
         }
 
         // handle already normalized versions
@@ -141,7 +146,7 @@ class ArrayLoader implements LoaderInterface
     private function configureObject(PackageInterface $package, array $config)
     {
         if (!$package instanceof CompletePackage) {
-            throw new \LogicException('ArrayLoader expects instances of the Composer\Package\CompletePackage class to function correctly');
+            throw new LogicException('ArrayLoader expects instances of the Composer\Package\CompletePackage class to function correctly');
         }
 
         $package->setType(isset($config['type']) ? strtolower($config['type']) : 'library');
@@ -174,7 +179,7 @@ class ArrayLoader implements LoaderInterface
 
         if (isset($config['source'])) {
             if (!isset($config['source']['type'], $config['source']['url'], $config['source']['reference'])) {
-                throw new \UnexpectedValueException(sprintf(
+                throw new UnexpectedValueException(sprintf(
                     "Package %s's source key should be specified as {\"type\": ..., \"url\": ..., \"reference\": ...},\n%s given.",
                     $config['name'],
                     json_encode($config['source'])
@@ -190,7 +195,7 @@ class ArrayLoader implements LoaderInterface
 
         if (isset($config['dist'])) {
             if (!isset($config['dist']['type'], $config['dist']['url'])) {
-                throw new \UnexpectedValueException(sprintf(
+                throw new UnexpectedValueException(sprintf(
                     "Package %s's dist key should be specified as ".
                     "{\"type\": ..., \"url\": ..., \"reference\": ..., \"shasum\": ...},\n%s given.",
                     $config['name'],
@@ -231,9 +236,9 @@ class ArrayLoader implements LoaderInterface
             $time = Preg::isMatch('/^\d++$/D', $config['time']) ? '@'.$config['time'] : $config['time'];
 
             try {
-                $date = new \DateTime($time, new \DateTimeZone('UTC'));
+                $date = new DateTime($time, new DateTimeZone('UTC'));
                 $package->setReleaseDate($date);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
             }
         }
 
@@ -385,7 +390,7 @@ class ArrayLoader implements LoaderInterface
     private function createLink($source, $sourceVersion, $description, $target, $prettyConstraint)
     {
         if (!\is_string($prettyConstraint)) {
-            throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\gettype($prettyConstraint) . ' (' . var_export($prettyConstraint, true) . ')');
+            throw new UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\gettype($prettyConstraint) . ' (' . var_export($prettyConstraint, true) . ')');
         }
         if ('self.version' === $prettyConstraint) {
             $parsedConstraint = $this->versionParser->parseConstraints($sourceVersion);

@@ -12,6 +12,7 @@
 
 namespace Composer\Util\Http;
 
+use LogicException;
 use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
@@ -39,7 +40,7 @@ class Response
     public function __construct(array $request, $code, array $headers, $body)
     {
         if (!isset($request['url'])) { // @phpstan-ignore-line
-            throw new \LogicException('url key missing from request array');
+            throw new LogicException('url key missing from request array');
         }
         $this->request = $request;
         $this->code = (int) $code;

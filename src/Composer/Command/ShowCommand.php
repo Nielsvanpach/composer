@@ -12,6 +12,8 @@
 
 namespace Composer\Command;
 
+use UnexpectedValueException;
+use InvalidArgumentException;
 use Composer\Composer;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
@@ -203,7 +205,7 @@ EOT
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
         } elseif ($input->getOption('locked')) {
             if (!$composer || !$composer->getLocker()->isLocked()) {
-                throw new \UnexpectedValueException('A valid composer.json and composer.lock files is required to run this command with --locked');
+                throw new UnexpectedValueException('A valid composer.json and composer.lock files is required to run this command with --locked');
             }
             $locker = $composer->getLocker();
             $lockedRepo = $locker->getLockedRepository(!$input->getOption('no-dev'));
@@ -249,9 +251,9 @@ EOT
                     $options = $input->getOptions();
                     if (!isset($options['working-dir']) || !file_exists('composer.json')) {
                         if (PlatformRepository::isPlatformPackage($input->getArgument('package')) && !$input->getOption('platform')) {
-                            throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found, try using --platform (-p) to show platform packages.');
+                            throw new InvalidArgumentException('Package ' . $packageFilter . ' not found, try using --platform (-p) to show platform packages.');
                         }
-                        throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found');
+                        throw new InvalidArgumentException('Package ' . $packageFilter . ' not found');
                     }
 
                     $io->writeError('Package ' . $packageFilter . ' not found in ' . $options['working-dir'] . '/composer.json');
@@ -596,7 +598,7 @@ EOT
      *
      * @param  string                     $name
      * @param  ConstraintInterface|string $version
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return array{CompletePackageInterface|null, array<string, string>}
      */
     protected function getPackage(InstalledRepository $installedRepo, RepositoryInterface $repos, $name, $version = null)

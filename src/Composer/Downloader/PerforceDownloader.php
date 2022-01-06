@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use function React\Promise\resolve;
 use Composer\Package\PackageInterface;
 use Composer\Repository\VcsRepository;
 use Composer\Util\Perforce;
@@ -29,7 +30,7 @@ class PerforceDownloader extends VcsDownloader
      */
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -49,7 +50,7 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce->syncCodeBase($label);
         $this->perforce->cleanupClientSpec();
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**

@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Loader;
 
+use InvalidArgumentException;
 use Composer\Json\JsonFile;
 use Composer\Package\CompletePackage;
 use Composer\Package\CompleteAliasPackage;
@@ -42,7 +43,7 @@ class JsonLoader
         } elseif (is_string($json)) {
             $config = JsonFile::parseJson($json);
         } else {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 "JsonLoader: Unknown \$json parameter %s. Please report at https://github.com/composer/composer/issues/new.",
                 gettype($json)
             ));

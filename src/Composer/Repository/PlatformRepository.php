@@ -12,6 +12,12 @@
 
 namespace Composer\Repository;
 
+use UnexpectedValueException;
+use InvalidArgumentException;
+use ResourceBundle;
+use IntlChar;
+use Imagick;
+use ZipArchive;
 use Composer\Composer;
 use Composer\Package\CompletePackage;
 use Composer\Package\CompletePackageInterface;
@@ -74,10 +80,10 @@ class PlatformRepository extends ArrayRepository
         $this->hhvmDetector = $hhvmDetector ?: new HhvmDetector();
         foreach ($overrides as $name => $version) {
             if (!is_string($version) && false !== $version) { // @phpstan-ignore-line
-                throw new \UnexpectedValueException('config.platform.'.$name.' should be a string or false, but got '.gettype($version).' '.var_export($version, true));
+                throw new UnexpectedValueException('config.platform.'.$name.' should be a string or false, but got '.gettype($version).' '.var_export($version, true));
             }
             if ($name === 'php' && $version === false) {
-                throw new \UnexpectedValueException('config.platform.'.$name.' cannot be set to false as you cannot disable php entirely.');
+                throw new UnexpectedValueException('config.platform.'.$name.' cannot be set to false as you cannot disable php entirely.');
             }
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
         }
@@ -117,7 +123,7 @@ class PlatformRepository extends ArrayRepository
         foreach ($this->overrides as $override) {
             // Check that it's a platform package.
             if (!self::isPlatformPackage($override['name'])) {
-                throw new \InvalidArgumentException('Invalid platform package name in config.platform: '.$override['name']);
+                throw new InvalidArgumentException('Invalid platform package name in config.platform: '.$override['name']);
             }
 
             if ($override['version'] !== false) {
@@ -146,7 +152,7 @@ class PlatformRepository extends ArrayRepository
         try {
             $prettyVersion = $this->runtime->getConstant('PHP_VERSION');
             $version = $this->versionParser->normalize($prettyVersion);
-        } catch (\UnexpectedValueException $e) {
+        } catch (UnexpectedValueException $e) {
             $prettyVersion = Preg::replace('#^([^~+-]+).*$#', '$1', $this->runtime->getConstant('PHP_VERSION'));
             $version = $this->versionParser->normalize($prettyVersion);
         }
@@ -332,18 +338,18 @@ class PlatformRepository extends ArrayRepository
                     }
 
                     // Add a separate version for the CLDR library version
-                    if ($this->runtime->hasClass(\ResourceBundle::class)) {
-                        $cldrVersion = $this->runtime->invoke(array(\ResourceBundle::class, 'create'), array('root', 'ICUDATA', false))->get('Version');
+                    if ($this->runtime->hasClass(ResourceBundle::class)) {
+                        $cldrVersion = $this->runtime->invoke(array(ResourceBundle::class, 'create'), array('root', 'ICUDATA', false))->get('Version');
                         $this->addLibrary('icu-cldr', $cldrVersion, 'ICU CLDR project version');
                     }
 
-                    if ($this->runtime->hasClass(\IntlChar::class)) {
-                        $this->addLibrary('icu-unicode', implode('.', array_slice($this->runtime->invoke(array(\IntlChar::class, 'getUnicodeVersion')), 0, 3)), 'ICU unicode version');
+                    if ($this->runtime->hasClass(IntlChar::class)) {
+                        $this->addLibrary('icu-unicode', implode('.', array_slice($this->runtime->invoke(array(IntlChar::class, 'getUnicodeVersion')), 0, 3)), 'ICU unicode version');
                     }
                     break;
 
                 case 'imagick':
-                    $imageMagickVersion = $this->runtime->construct(\Imagick::class)->getVersion();
+                    $imageMagickVersion = $this->runtime->construct(Imagick::class)->getVersion();
                     // 6.x: ImageMagick 6.2.9 08/24/06 Q16 http://www.imagemagick.org
                     // 7.x: ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org
                     Preg::match('/^ImageMagick (?<version>[\d.]+)(?:-(?<patch>\d+))?/', $imageMagickVersion['versionString'], $matches);
@@ -492,8 +498,8 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'zip':
-                    if ($this->runtime->hasConstant('LIBZIP_VERSION', \ZipArchive::class)) {
-                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION', \ZipArchive::class), null, array('zip'));
+                    if ($this->runtime->hasConstant('LIBZIP_VERSION', ZipArchive::class)) {
+                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION', ZipArchive::class), null, array('zip'));
                     }
                     break;
 
@@ -517,7 +523,7 @@ class PlatformRepository extends ArrayRepository
             try {
                 $prettyVersion = $hhvmVersion;
                 $version = $this->versionParser->normalize($prettyVersion);
-            } catch (\UnexpectedValueException $e) {
+            } catch (UnexpectedValueException $e) {
                 $prettyVersion = Preg::replace('#^([^~+-]+).*$#', '$1', $hhvmVersion);
                 $version = $this->versionParser->normalize($prettyVersion);
             }
@@ -534,7 +540,7 @@ class PlatformRepository extends ArrayRepository
     public function addPackage(PackageInterface $package)
     {
         if (!$package instanceof CompletePackage) {
-            throw new \UnexpectedValueException('Expected CompletePackage but got '.get_class($package));
+            throw new UnexpectedValueException('Expected CompletePackage but got '.get_class($package));
         }
 
         // Skip if overridden
@@ -624,7 +630,7 @@ class PlatformRepository extends ArrayRepository
 
         try {
             $version = $this->versionParser->normalize($prettyVersion);
-        } catch (\UnexpectedValueException $e) {
+        } catch (UnexpectedValueException $e) {
             $extraDescription = ' (actual version: '.$prettyVersion.')';
             if (Preg::isMatch('{^(\d+\.\d+\.\d+(?:\.\d+)?)}', $prettyVersion, $match)) {
                 $prettyVersion = $match[1];
@@ -669,7 +675,7 @@ class PlatformRepository extends ArrayRepository
     {
         try {
             $version = $this->versionParser->normalize($prettyVersion);
-        } catch (\UnexpectedValueException $e) {
+        } catch (UnexpectedValueException $e) {
             return;
         }
 

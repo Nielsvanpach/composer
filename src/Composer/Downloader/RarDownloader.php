@@ -12,6 +12,9 @@
 
 namespace Composer\Downloader;
 
+use RuntimeException;
+use UnexpectedValueException;
+use function React\Promise\resolve;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
@@ -36,7 +39,7 @@ class RarDownloader extends ArchiveDownloader
             $command = 'unrar x -- ' . ProcessExecutor::escape($file) . ' ' . ProcessExecutor::escape($path) . ' >/dev/null && chmod -R u+w ' . ProcessExecutor::escape($path);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
-                return \React\Promise\resolve();
+                return resolve();
             }
 
             $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
@@ -53,29 +56,29 @@ class RarDownloader extends ArchiveDownloader
                 $error = "Could not decompress the archive, enable the PHP rar extension.\n" . $iniMessage;
             }
 
-            throw new \RuntimeException($error);
+            throw new RuntimeException($error);
         }
 
         $rarArchive = RarArchive::open($file);
 
         if (false === $rarArchive) {
-            throw new \UnexpectedValueException('Could not open RAR archive: ' . $file);
+            throw new UnexpectedValueException('Could not open RAR archive: ' . $file);
         }
 
         $entries = $rarArchive->getEntries();
 
         if (false === $entries) {
-            throw new \RuntimeException('Could not retrieve RAR archive entries');
+            throw new RuntimeException('Could not retrieve RAR archive entries');
         }
 
         foreach ($entries as $entry) {
             if (false === $entry->extract($path)) {
-                throw new \RuntimeException('Could not extract entry');
+                throw new RuntimeException('Could not extract entry');
             }
         }
 
         $rarArchive->close();
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 }

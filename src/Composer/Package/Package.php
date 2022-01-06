@@ -12,6 +12,7 @@
 
 namespace Composer\Package;
 
+use DateTime;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
 use Composer\Util\ComposerMirror;
@@ -51,7 +52,7 @@ class Package extends BasePackage
     protected $version;
     /** @var string */
     protected $prettyVersion;
-    /** @var ?\DateTime */
+    /** @var ?DateTime */
     protected $releaseDate;
     /** @var mixed[] */
     protected $extra = array();
@@ -431,11 +432,11 @@ class Package extends BasePackage
     /**
      * Set the releaseDate
      *
-     * @param \DateTime $releaseDate
+     * @param DateTime $releaseDate
      *
      * @return void
      */
-    public function setReleaseDate(\DateTime $releaseDate)
+    public function setReleaseDate(DateTime $releaseDate)
     {
         $this->releaseDate = $releaseDate;
     }

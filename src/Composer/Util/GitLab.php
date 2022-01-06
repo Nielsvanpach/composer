@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use RuntimeException;
+use Exception;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Factory;
@@ -107,8 +109,8 @@ class GitLab
      * @param string $originUrl The host this GitLab instance is located at
      * @param string $message   The reason this authorization is required
      *
-     * @throws \RuntimeException
-     * @throws TransportException|\Exception
+     * @throws RuntimeException
+     * @throws TransportException|Exception
      *
      * @return bool true on success
      */
@@ -158,7 +160,7 @@ class GitLab
             return true;
         }
 
-        throw new \RuntimeException('Invalid GitLab credentials 5 times in a row, aborting.');
+        throw new RuntimeException('Invalid GitLab credentials 5 times in a row, aborting.');
     }
 
     /**

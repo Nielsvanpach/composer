@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use Exception;
+use function React\Promise\all;
 use React\Promise\CancellablePromiseInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
 use React\Promise\PromiseInterface;
@@ -64,10 +66,10 @@ class Loop
      */
     public function wait(array $promises, ProgressBar $progress = null)
     {
-        /** @var \Exception|null */
+        /** @var Exception|null */
         $uncaught = null;
 
-        \React\Promise\all($promises)->then(
+        all($promises)->then(
             function () {
             },
             function ($e) use (&$uncaught) {

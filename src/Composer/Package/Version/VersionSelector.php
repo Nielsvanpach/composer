@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Version;
 
+use UnexpectedValueException;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
@@ -72,7 +73,7 @@ class VersionSelector
     {
         if (!isset(BasePackage::$stabilities[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
-            throw new \UnexpectedValueException('Expected a valid stability name as 3rd argument, got '.$preferredStability);
+            throw new UnexpectedValueException('Expected a valid stability name as 3rd argument, got '.$preferredStability);
         }
 
         if (null === $platformRequirementFilter) {

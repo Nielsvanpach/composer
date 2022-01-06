@@ -12,6 +12,10 @@
 
 namespace Composer\Util;
 
+use Exception;
+use Throwable;
+use BadMethodCallException;
+use InvalidArgumentException;
 use Composer\Config;
 use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
@@ -215,7 +219,7 @@ class RemoteFilesystem
      * @param string  $fileName          the local filename
      * @param bool    $progress          Display the progression
      *
-     * @throws TransportException|\Exception
+     * @throws TransportException|Exception
      * @throws TransportException            When the file could not be downloaded
      *
      * @return bool|string
@@ -324,7 +328,7 @@ class RemoteFilesystem
                 $e->setStatusCode(self::findStatusCode($http_response_header));
                 try {
                     $e->setResponse($this->decodeResult($result, $http_response_header));
-                } catch (\Exception $discarded) {
+                } catch (Exception $discarded) {
                     $e->setResponse($this->normalizeResult($result));
                 }
 
@@ -344,7 +348,7 @@ class RemoteFilesystem
                     throw new TransportException('Peer fingerprint did not match');
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
                 $e->setStatusCode(self::findStatusCode($http_response_header));
@@ -437,7 +441,7 @@ class RemoteFilesystem
         if ($result && extension_loaded('zlib') && strpos($fileUrl, 'http') === 0 && !$hasFollowedRedirect) {
             try {
                 $result = $this->decodeResult($result, $http_response_header);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 if ($this->degradedMode) {
                     throw $e;
                 }
@@ -573,8 +577,8 @@ class RemoteFilesystem
                 // passing `null` to file_get_contents will convert `null` to `0` and return 0 bytes
                 $result = file_get_contents($fileUrl, false, $context);
             }
-        } catch (\Exception $e) {
-        } catch (\Throwable $e) {
+        } catch (Exception $e) {
+        } catch (Throwable $e) {
         }
 
         if ($maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {
@@ -796,7 +800,7 @@ class RemoteFilesystem
     private function getCertificateCnAndFp($url, $options)
     {
         if (PHP_VERSION_ID >= 50600) {
-            throw new \BadMethodCallException(sprintf(
+            throw new BadMethodCallException(sprintf(
                 '%s must not be used on PHP >= 5.6',
                 __METHOD__
             ));
@@ -853,7 +857,7 @@ class RemoteFilesystem
         $scheme = parse_url($url, PHP_URL_SCHEME);
 
         if (!isset($defaultPorts[$scheme])) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'Could not get default port for unknown scheme: %s',
                 $scheme
             ));

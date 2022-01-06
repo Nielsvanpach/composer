@@ -12,6 +12,8 @@
 
 namespace Composer\Repository;
 
+use InvalidArgumentException;
+use UnexpectedValueException;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
@@ -45,13 +47,13 @@ class RepositoryFactory
             } elseif ($allowFilesystem) {
                 $repoConfig = array('type' => 'filesystem', 'json' => $json);
             } else {
-                throw new \InvalidArgumentException("Invalid repository URL ($repository) given. This file does not contain a valid composer repository.");
+                throw new InvalidArgumentException("Invalid repository URL ($repository) given. This file does not contain a valid composer repository.");
             }
         } elseif (strpos($repository, '{') === 0) {
             // assume it is a json object that makes a repo config
             $repoConfig = JsonFile::parseJson($repository);
         } else {
-            throw new \InvalidArgumentException("Invalid repository url ($repository) given. Has to be a .json file, an http url or a JSON object.");
+            throw new InvalidArgumentException("Invalid repository url ($repository) given. Has to be a .json file, an http url or a JSON object.");
         }
 
         return $repoConfig;
@@ -103,7 +105,7 @@ class RepositoryFactory
         }
         if (!$rm) {
             if (!$io) {
-                throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
+                throw new InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
             }
             $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
         }
@@ -121,21 +123,21 @@ class RepositoryFactory
     public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null)
     {
         $rm = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher, $process);
-        $rm->setRepositoryClass('composer', \Composer\Repository\ComposerRepository::class);
-        $rm->setRepositoryClass('vcs', \Composer\Repository\VcsRepository::class);
-        $rm->setRepositoryClass('package', \Composer\Repository\PackageRepository::class);
-        $rm->setRepositoryClass('pear', \Composer\Repository\PearRepository::class);
-        $rm->setRepositoryClass('git', \Composer\Repository\VcsRepository::class);
-        $rm->setRepositoryClass('bitbucket', \Composer\Repository\VcsRepository::class);
-        $rm->setRepositoryClass('git-bitbucket', \Composer\Repository\VcsRepository::class);
-        $rm->setRepositoryClass('github', \Composer\Repository\VcsRepository::class);
-        $rm->setRepositoryClass('gitlab', \Composer\Repository\VcsRepository::class);
-        $rm->setRepositoryClass('svn', \Composer\Repository\VcsRepository::class);
-        $rm->setRepositoryClass('fossil', \Composer\Repository\VcsRepository::class);
-        $rm->setRepositoryClass('perforce', \Composer\Repository\VcsRepository::class);
-        $rm->setRepositoryClass('hg', \Composer\Repository\VcsRepository::class);
-        $rm->setRepositoryClass('artifact', \Composer\Repository\ArtifactRepository::class);
-        $rm->setRepositoryClass('path', \Composer\Repository\PathRepository::class);
+        $rm->setRepositoryClass('composer', ComposerRepository::class);
+        $rm->setRepositoryClass('vcs', VcsRepository::class);
+        $rm->setRepositoryClass('package', PackageRepository::class);
+        $rm->setRepositoryClass('pear', PearRepository::class);
+        $rm->setRepositoryClass('git', VcsRepository::class);
+        $rm->setRepositoryClass('bitbucket', VcsRepository::class);
+        $rm->setRepositoryClass('git-bitbucket', VcsRepository::class);
+        $rm->setRepositoryClass('github', VcsRepository::class);
+        $rm->setRepositoryClass('gitlab', VcsRepository::class);
+        $rm->setRepositoryClass('svn', VcsRepository::class);
+        $rm->setRepositoryClass('fossil', VcsRepository::class);
+        $rm->setRepositoryClass('perforce', VcsRepository::class);
+        $rm->setRepositoryClass('hg', VcsRepository::class);
+        $rm->setRepositoryClass('artifact', ArtifactRepository::class);
+        $rm->setRepositoryClass('path', PathRepository::class);
 
         return $rm;
     }
@@ -151,13 +153,13 @@ class RepositoryFactory
 
         foreach ($repoConfigs as $index => $repo) {
             if (is_string($repo)) {
-                throw new \UnexpectedValueException('"repositories" should be an array of repository definitions, only a single repository was given');
+                throw new UnexpectedValueException('"repositories" should be an array of repository definitions, only a single repository was given');
             }
             if (!is_array($repo)) {
-                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
+                throw new UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
             }
             if (!isset($repo['type'])) {
-                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') must have a type defined');
+                throw new UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') must have a type defined');
             }
 
             $name = self::generateRepositoryName($index, $repo, $repos);

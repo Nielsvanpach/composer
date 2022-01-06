@@ -12,6 +12,10 @@
 
 namespace Composer\Package\Loader;
 
+use Composer\Package\CompletePackage;
+use Exception;
+use DateTime;
+use DateTimeZone;
 use Composer\Package\BasePackage;
 use Composer\Pcre\Preg;
 use Composer\Semver\Constraint\Constraint;
@@ -59,7 +63,7 @@ class ValidatingArrayLoader implements LoaderInterface
     /**
      * @inheritDoc
      */
-    public function load(array $config, $class = \Composer\Package\CompletePackage::class)
+    public function load(array $config, $class = CompletePackage::class)
     {
         $this->errors = array();
         $this->warnings = array();
@@ -73,7 +77,7 @@ class ValidatingArrayLoader implements LoaderInterface
         if (!empty($this->config['version'])) {
             try {
                 $this->versionParser->normalize($this->config['version']);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->errors[] = 'version : invalid value ('.$this->config['version'].'): '.$e->getMessage();
                 unset($this->config['version']);
             }
@@ -90,7 +94,7 @@ class ValidatingArrayLoader implements LoaderInterface
                 }
                 try {
                     $this->versionParser->normalize($platform);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->errors[] = 'config.platform.' . $key . ' : invalid value ('.$platform.'): '.$e->getMessage();
                 }
             }
@@ -117,8 +121,8 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->validateString('time');
         if (!empty($this->config['time'])) {
             try {
-                $releaseDate = new \DateTime($this->config['time'], new \DateTimeZone('UTC'));
-            } catch (\Exception $e) {
+                $releaseDate = new DateTime($this->config['time'], new DateTimeZone('UTC'));
+            } catch (Exception $e) {
                 $this->errors[] = 'time : invalid value ('.$this->config['time'].'): '.$e->getMessage();
                 unset($this->config['time']);
             }
@@ -261,7 +265,7 @@ class ValidatingArrayLoader implements LoaderInterface
                     } elseif ('self.version' !== $constraint) {
                         try {
                             $linkConstraint = $this->versionParser->parseConstraints($constraint);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             $this->errors[] = $linkType.'.'.$package.' : invalid version constraint ('.$e->getMessage().')';
                             unset($this->config[$linkType][$package]);
                             continue;

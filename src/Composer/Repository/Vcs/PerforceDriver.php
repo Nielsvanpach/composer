@@ -12,6 +12,8 @@
 
 namespace Composer\Repository\Vcs;
 
+use RuntimeException;
+use BadMethodCallException;
 use Composer\Config;
 use Composer\Cache;
 use Composer\IO\IOInterface;
@@ -62,7 +64,7 @@ class PerforceDriver extends VcsDriver
         }
 
         if (!Cache::isUsable((string) $this->config->get('cache-vcs-dir'))) {
-            throw new \RuntimeException('PerforceDriver requires a usable cache directory, and it looks like you set it to be disabled');
+            throw new RuntimeException('PerforceDriver requires a usable cache directory, and it looks like you set it to be disabled');
         }
 
         $repoDir = $this->config->get('cache-vcs-dir') . '/' . $this->depot;
@@ -153,7 +155,7 @@ class PerforceDriver extends VcsDriver
      */
     public function getContents($url)
     {
-        throw new \BadMethodCallException('Not implemented/used in PerforceDriver');
+        throw new BadMethodCallException('Not implemented/used in PerforceDriver');
     }
 
     /**

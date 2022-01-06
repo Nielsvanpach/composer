@@ -12,6 +12,7 @@
 
 namespace Composer\Installer;
 
+use InvalidArgumentException;
 use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\Repository\InstalledRepositoryInterface;
@@ -68,7 +69,7 @@ class ProjectInstaller implements InstallerInterface
     {
         $installPath = $this->installPath;
         if (file_exists($installPath) && !$this->filesystem->isDirEmpty($installPath)) {
-            throw new \InvalidArgumentException("Project directory $installPath is not empty.");
+            throw new InvalidArgumentException("Project directory $installPath is not empty.");
         }
         if (!is_dir($installPath)) {
             mkdir($installPath, 0777, true);
@@ -106,7 +107,7 @@ class ProjectInstaller implements InstallerInterface
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-        throw new \InvalidArgumentException("not supported");
+        throw new InvalidArgumentException("not supported");
     }
 
     /**
@@ -114,7 +115,7 @@ class ProjectInstaller implements InstallerInterface
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        throw new \InvalidArgumentException("not supported");
+        throw new InvalidArgumentException("not supported");
     }
 
     /**

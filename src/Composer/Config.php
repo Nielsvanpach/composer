@@ -12,6 +12,7 @@
 
 namespace Composer;
 
+use RuntimeException;
 use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
@@ -273,7 +274,7 @@ class Config
      *
      * @param  string            $key
      * @param  int               $flags Options (see class constants)
-     * @throws \RuntimeException
+     * @throws RuntimeException
      *
      * @return mixed
      */
@@ -342,7 +343,7 @@ class Config
             // numbers with kb/mb/gb support, without env var support
             case 'cache-files-maxsize':
                 if (!Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
-                    throw new \RuntimeException(
+                    throw new RuntimeException(
                         "Could not parse the value of '$key': {$this->config[$key]}"
                     );
                 }
@@ -382,7 +383,7 @@ class Config
                 $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
 
                 if (!in_array($value, array('auto', 'full', 'proxy', 'symlink'))) {
-                    throw new \RuntimeException(
+                    throw new RuntimeException(
                         "Invalid value for 'bin-compat': {$value}. Expected auto, full or proxy"
                     );
                 }
@@ -396,7 +397,7 @@ class Config
             case 'discard-changes':
                 if ($env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES')) {
                     if (!in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
-                        throw new \RuntimeException(
+                        throw new RuntimeException(
                             "Invalid value for COMPOSER_DISCARD_CHANGES: {$env}. Expected 1, 0, true, false or stash"
                         );
                     }
@@ -409,7 +410,7 @@ class Config
                 }
 
                 if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
-                    throw new \RuntimeException(
+                    throw new RuntimeException(
                         "Invalid value for 'discard-changes': {$this->config[$key]}. Expected true, false or stash"
                     );
                 }
@@ -422,7 +423,7 @@ class Config
                     unset($protos[$index]);
                 }
                 if (reset($protos) === 'http') {
-                    throw new \RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https", "git" or "ssh"');
+                    throw new RuntimeException('The http protocol for github is not available anymore, update your config\'s github-protocols to use "https", "git" or "ssh"');
                 }
 
                 return $protos;

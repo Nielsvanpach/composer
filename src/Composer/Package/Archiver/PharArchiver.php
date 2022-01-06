@@ -12,6 +12,11 @@
 
 namespace Composer\Package\Archiver;
 
+use Phar;
+use PharData;
+use FilesystemIterator;
+use RuntimeException;
+use UnexpectedValueException;
 /**
  * @author Till Klampaeckel <till@php.net>
  * @author Nils Adermann <naderman@naderman.de>
@@ -21,16 +26,16 @@ class PharArchiver implements ArchiverInterface
 {
     /** @var array<string, int> */
     protected static $formats = array(
-        'zip' => \Phar::ZIP,
-        'tar' => \Phar::TAR,
-        'tar.gz' => \Phar::TAR,
-        'tar.bz2' => \Phar::TAR,
+        'zip' => Phar::ZIP,
+        'tar' => Phar::TAR,
+        'tar.gz' => Phar::TAR,
+        'tar.bz2' => Phar::TAR,
     );
 
     /** @var array<string, int> */
     protected static $compressFormats = array(
-        'tar.gz' => \Phar::GZ,
-        'tar.bz2' => \Phar::BZ2,
+        'tar.gz' => Phar::GZ,
+        'tar.bz2' => Phar::BZ2,
     );
 
     /**
@@ -54,9 +59,9 @@ class PharArchiver implements ArchiverInterface
                 $target = $filename . '.tar';
             }
 
-            $phar = new \PharData(
+            $phar = new PharData(
                 $target,
-                \FilesystemIterator::KEY_AS_PATHNAME | \FilesystemIterator::CURRENT_AS_FILEINFO,
+                FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO,
                 '',
                 static::$formats[$format]
             );
@@ -68,7 +73,7 @@ class PharArchiver implements ArchiverInterface
             if (isset(static::$compressFormats[$format])) {
                 // Check can be compressed?
                 if (!$phar->canCompress(static::$compressFormats[$format])) {
-                    throw new \RuntimeException(sprintf('Can not compress to %s format', $format));
+                    throw new RuntimeException(sprintf('Can not compress to %s format', $format));
                 }
 
                 // Delete old tar
@@ -82,7 +87,7 @@ class PharArchiver implements ArchiverInterface
             }
 
             return $target;
-        } catch (\UnexpectedValueException $e) {
+        } catch (UnexpectedValueException $e) {
             $message = sprintf(
                 "Could not create archive '%s' from '%s': %s",
                 $target,
@@ -90,7 +95,7 @@ class PharArchiver implements ArchiverInterface
                 $e->getMessage()
             );
 
-            throw new \RuntimeException($message, $e->getCode(), $e);
+            throw new RuntimeException($message, $e->getCode(), $e);
         }
     }
 

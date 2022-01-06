@@ -12,6 +12,8 @@
 
 namespace Composer\Json;
 
+use InvalidArgumentException;
+use RuntimeException;
 use Composer\Pcre\Preg;
 use Composer\Repository\PlatformRepository;
 
@@ -48,7 +50,7 @@ class JsonManipulator
             $contents = '{}';
         }
         if (!Preg::isMatch('#^\{(.*)\}$#s', $contents)) {
-            throw new \InvalidArgumentException('The json file must be an object ({})');
+            throw new InvalidArgumentException('The json file must be an object ({})');
         }
         $this->newline = false !== strpos($contents, "\r\n") ? "\r\n" : "\n";
         $this->contents = $contents === '{}' ? '{' . $this->newline . '}' : $contents;
@@ -281,7 +283,7 @@ class JsonManipulator
             if (!Preg::isMatch($nodeRegex, $this->contents, $match)) {
                 return false;
             }
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
                 return false;
             }
@@ -381,7 +383,7 @@ class JsonManipulator
             if (!Preg::isMatch($nodeRegex, $this->contents, $match)) {
                 return false;
             }
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
                 return false;
             }
@@ -429,7 +431,7 @@ class JsonManipulator
         }
 
         if (!isset($childrenClean)) {
-            throw new \InvalidArgumentException("JsonManipulator: \$childrenClean is not defined. Please report at https://github.com/composer/composer/issues/new.");
+            throw new InvalidArgumentException("JsonManipulator: \$childrenClean is not defined. Please report at https://github.com/composer/composer/issues/new.");
         }
 
         // no child data left, $name was the only key in

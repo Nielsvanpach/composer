@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use InvalidArgumentException;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
@@ -74,7 +75,7 @@ class BaseDependencyCommand extends BaseCommand
         // Find packages that are or provide the requested package first
         $packages = $installedRepo->findPackagesWithReplacersAndProviders($needle);
         if (empty($packages)) {
-            throw new \InvalidArgumentException(sprintf('Could not find package "%s" in your project', $needle));
+            throw new InvalidArgumentException(sprintf('Could not find package "%s" in your project', $needle));
         }
 
         // If the version we ask for is not installed then we need to locate it in remote repos and add it.

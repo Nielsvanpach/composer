@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use LogicException;
+use Exception;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
@@ -223,7 +225,7 @@ class HttpDownloader
         );
 
         if (!$sync && !$this->allowAsync) {
-            throw new \LogicException('You must use the HttpDownloader instance which is part of a Composer\Loop instance to be able to run async http requests');
+            throw new LogicException('You must use the HttpDownloader instance which is part of a Composer\Loop instance to be able to run async http requests');
         }
 
         // capture username/password from URL if there is one
@@ -251,13 +253,13 @@ class HttpDownloader
                     $rfs->copy($job['origin'], $url, $job['request']['copyTo'], false /* TODO progress */, $options);
 
                     $headers = $rfs->getLastHeaders();
-                    $response = new Http\Response($job['request'], $rfs->findStatusCode($headers), $headers, $job['request']['copyTo'].'~');
+                    $response = new Response($job['request'], $rfs->findStatusCode($headers), $headers, $job['request']['copyTo'].'~');
 
                     $resolve($response);
                 } else {
                     $body = $rfs->getContents($job['origin'], $url, false /* TODO progress */, $options);
                     $headers = $rfs->getLastHeaders();
-                    $response = new Http\Response($job['request'], $rfs->findStatusCode($headers), $headers, $body);
+                    $response = new Response($job['request'], $rfs->findStatusCode($headers), $headers, $body);
 
                     $resolve($response);
                 }
@@ -346,7 +348,7 @@ class HttpDownloader
             } else {
                 $job['curl_id'] = $this->curl->download($resolve, $reject, $origin, $url, $options);
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $reject($exception);
         }
     }
@@ -427,7 +429,7 @@ class HttpDownloader
     private function getResponse($index)
     {
         if (!isset($this->jobs[$index])) {
-            throw new \LogicException('Invalid request id');
+            throw new LogicException('Invalid request id');
         }
 
         if ($this->jobs[$index]['status'] === self::STATUS_FAILED) {
@@ -435,7 +437,7 @@ class HttpDownloader
         }
 
         if (!isset($this->jobs[$index]['response'])) {
-            throw new \LogicException('Response not available yet, call wait() first');
+            throw new LogicException('Response not available yet, call wait() first');
         }
 
         $resp = $this->jobs[$index]['response'];
@@ -497,7 +499,7 @@ class HttpDownloader
      *
      * @return ?string[]
      */
-    public static function getExceptionHints(\Exception $e)
+    public static function getExceptionHints(Exception $e)
     {
         if (!$e instanceof TransportException) {
             return null;

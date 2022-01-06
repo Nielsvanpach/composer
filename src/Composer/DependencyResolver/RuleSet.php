@@ -12,13 +12,16 @@
 
 namespace Composer\DependencyResolver;
 
+use IteratorAggregate;
+use Countable;
+use OutOfBoundsException;
 use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
- * @implements \IteratorAggregate<Rule>
+ * @implements IteratorAggregate<Rule>
  */
-class RuleSet implements \IteratorAggregate, \Countable
+class RuleSet implements IteratorAggregate, Countable
 {
     // highest priority => lowest number
     const TYPE_PACKAGE = 0;
@@ -62,7 +65,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     public function add(Rule $rule, $type)
     {
         if (!isset(self::$types[$type])) {
-            throw new \OutOfBoundsException('Unknown rule type: ' . $type);
+            throw new OutOfBoundsException('Unknown rule type: ' . $type);
         }
 
         $hash = $rule->getHash();

@@ -12,10 +12,11 @@
 
 namespace Composer\DependencyResolver;
 
+use RuntimeException;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
-class SolverBugException extends \RuntimeException
+class SolverBugException extends RuntimeException
 {
     /**
      * @param string $message

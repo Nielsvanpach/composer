@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use RuntimeException;
+use Exception;
 use Composer\Pcre\Preg;
 
 /**
@@ -93,7 +95,7 @@ class Platform
     }
 
     /**
-     * @throws \RuntimeException If the user home could not reliably be determined
+     * @throws RuntimeException If the user home could not reliably be determined
      * @return string            The formal user home as detected from environment parameters
      */
     public static function getUserDirectory()
@@ -112,7 +114,7 @@ class Platform
             return $info['dir'];
         }
 
-        throw new \RuntimeException('Could not determine user directory');
+        throw new RuntimeException('Could not determine user directory');
     }
 
     /**
@@ -241,7 +243,7 @@ class Platform
                     if (0 === $process->execute('lsmod | grep vboxguest', $ignoredOutput)) {
                         return self::$isVirtualBoxGuest = true;
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // noop
                 }
             }

@@ -12,11 +12,12 @@
 
 namespace Composer\DependencyResolver;
 
+use Iterator;
 /**
  * @author Nils Adermann <naderman@naderman.de>
- * @implements \Iterator<RuleSet::TYPE_*, Rule>
+ * @implements Iterator<RuleSet::TYPE_*, Rule>
  */
-class RuleSetIterator implements \Iterator
+class RuleSetIterator implements Iterator
 {
     /** @var array<RuleSet::TYPE_*, Rule[]> */
     protected $rules;

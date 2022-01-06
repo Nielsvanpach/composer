@@ -12,6 +12,9 @@
 
 namespace Composer\Repository\Vcs;
 
+use RuntimeException;
+use DateTime;
+use DateTimeZone;
 use Composer\Cache;
 use Composer\Config;
 use Composer\Json\JsonFile;
@@ -184,7 +187,7 @@ class SvnDriver extends VcsDriver
             if (!trim($output)) {
                 return null;
             }
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             throw new TransportException($e->getMessage());
         }
 
@@ -210,7 +213,7 @@ class SvnDriver extends VcsDriver
         $output = $this->execute('svn info', $this->baseUrl . $path . $rev);
         foreach ($this->process->splitLines($output) as $line) {
             if ($line && Preg::isMatch('{^Last Changed Date: ([^(]+)}', $line, $match)) {
-                return new \DateTime($match[1], new \DateTimeZone('UTC'));
+                return new DateTime($match[1], new DateTimeZone('UTC'));
             }
         }
 
@@ -369,7 +372,7 @@ class SvnDriver extends VcsDriver
      *
      * @param  string            $command The svn command to run.
      * @param  string            $url     The SVN URL.
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return string
      */
     protected function execute($command, $url)
@@ -381,12 +384,12 @@ class SvnDriver extends VcsDriver
 
         try {
             return $this->util->execute($command, $url);
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             if (null === $this->util->binaryVersion()) {
-                throw new \RuntimeException('Failed to load '.$this->url.', svn was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
+                throw new RuntimeException('Failed to load '.$this->url.', svn was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput());
             }
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'Repository '.$this->url.' could not be processed, '.$e->getMessage()
             );
         }

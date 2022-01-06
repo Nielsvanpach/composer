@@ -12,6 +12,12 @@
 
 namespace Composer\Repository;
 
+use UnexpectedValueException;
+use LogicException;
+use RuntimeException;
+use Exception;
+use React\Promise\PromiseInterface;
+use function React\Promise\resolve;
 use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
@@ -148,7 +154,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $urlBits = parse_url($repoConfig['url']);
         if ($urlBits === false || empty($urlBits['scheme'])) {
-            throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
+            throw new UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
 
         if (!isset($repoConfig['options'])) {
@@ -326,11 +332,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return array_values($this->partialPackagesByName);
             }
 
-            throw new \LogicException('Composer repositories that have lazy providers and no available-packages list can not load the complete list of packages, use getPackageNames instead.');
+            throw new LogicException('Composer repositories that have lazy providers and no available-packages list can not load the complete list of packages, use getPackageNames instead.');
         }
 
         if ($hasProviders) {
-            throw new \LogicException('Composer repositories that have providers can not load the complete list of packages, use getPackageNames instead.');
+            throw new LogicException('Composer repositories that have providers can not load the complete list of packages, use getPackageNames instead.');
         }
 
         return parent::getPackages();
@@ -434,7 +440,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private function loadPackageList($packageFilter = null)
     {
         if (null === $this->listUrl) {
-            throw new \LogicException('Make sure to call loadRootServerFile before loadPackageList');
+            throw new LogicException('Make sure to call loadRootServerFile before loadPackageList');
         }
 
         $url = $this->listUrl;
@@ -486,7 +492,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $candidates = $this->whatProvides($name, $acceptableStabilities, $stabilityFlags, $alreadyLoaded);
                 foreach ($candidates as $candidate) {
                     if ($candidate->getName() !== $name) {
-                        throw new \LogicException('whatProvides should never return a package with a different name than the requested one');
+                        throw new LogicException('whatProvides should never return a package with a different name than the requested one');
                     }
                     $namesFound[$name] = true;
 
@@ -870,7 +876,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $repo = $this;
 
         if (!$this->lazyProvidersUrl) {
-            throw new \LogicException('loadAsyncPackages only supports v2 protocol composer repos with a metadata-url');
+            throw new LogicException('loadAsyncPackages only supports v2 protocol composer repos with a metadata-url');
         }
 
         // load ~dev versions of the packages as well if needed
@@ -1023,7 +1029,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if (!extension_loaded('openssl') && strpos($this->url, 'https') === 0) {
-            throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
+            throw new RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
 
         if ($cachedData = $this->cache->read('packages.json')) {
@@ -1280,8 +1286,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             return $packageInstances;
-        } catch (\Exception $e) {
-            throw new \RuntimeException('Could not load packages '.(isset($packages[0]['name']) ? $packages[0]['name'] : json_encode($packages)).' in '.$this->getRepoName().($source ? ' from '.$source : '').': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
+        } catch (Exception $e) {
+            throw new RuntimeException('Could not load packages '.(isset($packages[0]['name']) ? $packages[0]['name'] : json_encode($packages)).' in '.$this->getRepoName().($source ? ' from '.$source : '').': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
         }
     }
 
@@ -1359,8 +1365,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $response->collect();
 
                 break;
-            } catch (\Exception $e) {
-                if ($e instanceof \LogicException) {
+            } catch (Exception $e) {
+                if ($e instanceof LogicException) {
                     throw $e;
                 }
 
@@ -1387,7 +1393,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if (!isset($data)) {
-            throw new \LogicException("ComposerRepository: Undefined \$data. Please report at https://github.com/composer/composer/issues/new.");
+            throw new LogicException("ComposerRepository: Undefined \$data. Please report at https://github.com/composer/composer/issues/new.");
         }
 
         return $data;
@@ -1441,8 +1447,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             return $data;
-        } catch (\Exception $e) {
-            if ($e instanceof \LogicException) {
+        } catch (Exception $e) {
+            if ($e instanceof LogicException) {
                 throw $e;
             }
 
@@ -1464,17 +1470,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @param string $cacheKey
      * @param string|null $lastModifiedTime
      *
-     * @return \React\Promise\PromiseInterface
+     * @return PromiseInterface
      */
     private function asyncFetchFile($filename, $cacheKey, $lastModifiedTime = null)
     {
         if (isset($this->packagesNotFoundCache[$filename])) {
-            return \React\Promise\resolve(array('packages' => array()));
+            return resolve(array('packages' => array()));
         }
 
         if (isset($this->freshMetadataUrls[$filename]) && $lastModifiedTime) {
             // make it look like we got a 304 response
-            return \React\Promise\resolve(true);
+            return resolve(true);
         }
 
         $httpDownloader = $this->httpDownloader;
@@ -1597,7 +1603,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected function lazyProvidersRepoContains($name)
     {
         if (!$this->hasAvailablePackageList) {
-            throw new \LogicException('lazyProvidersRepoContains should not be called unless hasAvailablePackageList is true');
+            throw new LogicException('lazyProvidersRepoContains should not be called unless hasAvailablePackageList is true');
         }
 
         if (is_array($this->availablePackages) && isset($this->availablePackages[$name])) {

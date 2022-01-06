@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Countable;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\CompilingMatcher;
@@ -24,7 +25,7 @@ use Composer\Semver\Constraint\Constraint;
  * @author Nils Adermann <naderman@naderman.de>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class Pool implements \Countable
+class Pool implements Countable
 {
     /** @var BasePackage[] */
     protected $packages = array();

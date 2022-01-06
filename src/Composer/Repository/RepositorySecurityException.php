@@ -12,11 +12,12 @@
 
 namespace Composer\Repository;
 
+use Exception;
 /**
  * Thrown when a security problem, like a broken or missing signature
  *
  * @author Eric Daspet <edaspet@survol.fr>
  */
-class RepositorySecurityException extends \Exception
+class RepositorySecurityException extends Exception
 {
 }

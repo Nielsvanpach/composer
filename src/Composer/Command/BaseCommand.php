@@ -12,6 +12,9 @@
 
 namespace Composer\Command;
 
+use RuntimeException;
+use InvalidArgumentException;
+use UnexpectedValueException;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Console\Application;
@@ -53,7 +56,7 @@ abstract class BaseCommand extends Command
      * @param  bool              $required
      * @param  bool|null         $disablePlugins
      * @param  bool|null         $disableScripts
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return Composer|null
      */
     public function getComposer($required = true, $disablePlugins = null, $disableScripts = null)
@@ -65,7 +68,7 @@ abstract class BaseCommand extends Command
                 $this->composer = $application->getComposer($required, $disablePlugins, $disableScripts);
             /** @phpstan-ignore-next-line */
             } elseif ($required) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     'Could not create a Composer\Composer instance, you must inject '.
                     'one if this command is not used with a Composer\Console\Application instance'
                 );
@@ -196,10 +199,10 @@ abstract class BaseCommand extends Command
 
         if ($input->hasOption('prefer-install') && $input->getOption('prefer-install')) {
             if ($input->getOption('prefer-source')) {
-                throw new \InvalidArgumentException('--prefer-source can not be used together with --prefer-install');
+                throw new InvalidArgumentException('--prefer-source can not be used together with --prefer-install');
             }
             if ($input->getOption('prefer-dist')) {
-                throw new \InvalidArgumentException('--prefer-dist can not be used together with --prefer-install');
+                throw new InvalidArgumentException('--prefer-dist can not be used together with --prefer-install');
             }
             switch ($input->getOption('prefer-install')) {
                 case 'dist':
@@ -213,7 +216,7 @@ abstract class BaseCommand extends Command
                     $preferSource = false;
                     break;
                 default:
-                    throw new \UnexpectedValueException('--prefer-install accepts one of "dist", "source" or "auto", got '.$input->getOption('prefer-install'));
+                    throw new UnexpectedValueException('--prefer-install accepts one of "dist", "source" or "auto", got '.$input->getOption('prefer-install'));
             }
         }
 
@@ -236,7 +239,7 @@ abstract class BaseCommand extends Command
         $requirements = $this->normalizeRequirements($requirements);
         foreach ($requirements as $requirement) {
             if (!isset($requirement['version'])) {
-                throw new \UnexpectedValueException('Option '.$requirement['name'] .' is missing a version constraint, use e.g. '.$requirement['name'].':^1.0');
+                throw new UnexpectedValueException('Option '.$requirement['name'] .' is missing a version constraint, use e.g. '.$requirement['name'].':^1.0');
             }
             $requires[$requirement['name']] = $requirement['version'];
         }
@@ -282,7 +285,7 @@ abstract class BaseCommand extends Command
      */
     protected function getTerminalWidth()
     {
-        if (class_exists(\Symfony\Component\Console\Terminal::class)) {
+        if (class_exists(Terminal::class)) {
             $terminal = new Terminal();
             $width = $terminal->getWidth();
         } else {

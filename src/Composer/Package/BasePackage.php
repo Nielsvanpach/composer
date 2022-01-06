@@ -12,6 +12,8 @@
 
 namespace Composer\Package;
 
+use LogicException;
+use UnexpectedValueException;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
 
@@ -135,7 +137,7 @@ abstract class BasePackage implements PackageInterface
     public function setRepository(RepositoryInterface $repository)
     {
         if ($this->repository && $repository !== $this->repository) {
-            throw new \LogicException('A package can only be added to one repository');
+            throw new LogicException('A package can only be added to one repository');
         }
         $this->repository = $repository;
     }
@@ -219,7 +221,7 @@ abstract class BasePackage implements PackageInterface
                 $reference = $this->getDistReference();
                 break;
             default:
-                throw new \UnexpectedValueException('Display mode '.$displayMode.' is not supported');
+                throw new UnexpectedValueException('Display mode '.$displayMode.' is not supported');
         }
 
         if (null === $reference) {

@@ -12,6 +12,10 @@
 
 namespace Composer\Command;
 
+use Symfony\Component\Console\Exception\ExceptionInterface;
+use LogicException;
+use RuntimeException;
+use Exception;
 use Composer\Factory;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
@@ -62,12 +66,12 @@ EOT
     }
 
     /**
-     * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+     * @throws ExceptionInterface
      */
     public function run(InputInterface $input, OutputInterface $output): int
     {
         if (!method_exists($input, '__toString')) {
-            throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
+            throw new LogicException('Expected an Input instance that is stringable, got '.get_class($input));
         }
 
         // extract real command name
@@ -100,14 +104,14 @@ EOT
             $fs = new Filesystem();
             $fs->ensureDirectoryExists($home);
             if (!is_dir($home)) {
-                throw new \RuntimeException('Could not create home directory');
+                throw new RuntimeException('Could not create home directory');
             }
         }
 
         try {
             chdir($home);
-        } catch (\Exception $e) {
-            throw new \RuntimeException('Could not switch to home directory "'.$home.'"', 0, $e);
+        } catch (Exception $e) {
+            throw new RuntimeException('Could not switch to home directory "'.$home.'"', 0, $e);
         }
         $this->getIO()->writeError('<info>Changed current directory to '.$home.'</info>');
 

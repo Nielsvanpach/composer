@@ -12,6 +12,8 @@
 
 namespace Composer\Package\Archiver;
 
+use RuntimeException;
+use Symfony\Component\Finder\Glob;
 use Composer\Pcre\Preg;
 use Symfony\Component\Finder;
 
@@ -64,7 +66,7 @@ abstract class BaseExcludeFilter
                 if (Preg::isMatch($pattern, $path)) {
                     $exclude = !$negate;
                 }
-            } catch (\RuntimeException $e) {
+            } catch (RuntimeException $e) {
                 // suppressed
             }
         }
@@ -145,7 +147,7 @@ abstract class BaseExcludeFilter
         $rule = trim($rule, '/');
 
         // remove delimiters as well as caret (^) and dollar sign ($) from the regex
-        $rule = substr(Finder\Glob::toRegex($rule), 2, -2);
+        $rule = substr(Glob::toRegex($rule), 2, -2);
 
         return array('{'.$pattern.$rule.'(?=$|/)}', $negate, false);
     }

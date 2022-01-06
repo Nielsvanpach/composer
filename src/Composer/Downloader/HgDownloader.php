@@ -12,6 +12,8 @@
 
 namespace Composer\Downloader;
 
+use RuntimeException;
+use function React\Promise\resolve;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Hg as HgUtils;
@@ -27,10 +29,10 @@ class HgDownloader extends VcsDownloader
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
         if (null === HgUtils::getVersion($this->process)) {
-            throw new \RuntimeException('hg was not found in your PATH, skipping source download');
+            throw new RuntimeException('hg was not found in your PATH, skipping source download');
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -49,10 +51,10 @@ class HgDownloader extends VcsDownloader
         $ref = ProcessExecutor::escape($package->getSourceReference());
         $command = sprintf('hg up -- %s', $ref);
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -66,7 +68,7 @@ class HgDownloader extends VcsDownloader
         $this->io->writeError(" Updating to ".$target->getSourceReference());
 
         if (!$this->hasMetadataRepository($path)) {
-            throw new \RuntimeException('The .hg directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
+            throw new RuntimeException('The .hg directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
         $command = function ($url) use ($ref) {
@@ -75,7 +77,7 @@ class HgDownloader extends VcsDownloader
 
         $hgUtils->runCommand($command, $url, $path);
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -100,7 +102,7 @@ class HgDownloader extends VcsDownloader
         $command = sprintf('hg log -r %s:%s --style compact', ProcessExecutor::escape($fromReference), ProcessExecutor::escape($toReference));
 
         if (0 !== $this->process->execute($command, $output, realpath($path))) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
         return $output;

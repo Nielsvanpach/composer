@@ -12,6 +12,11 @@
 
 namespace Composer\Command;
 
+use Exception;
+use RuntimeException;
+use ArrayObject;
+use Seld\JsonLint\ParsingException;
+use InvalidArgumentException;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
@@ -152,14 +157,14 @@ EOT
 
     /**
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
         parent::initialize($input, $output);
 
         if ($input->getOption('global') && null !== $input->getOption('file')) {
-            throw new \RuntimeException('--file and --global can not be combined');
+            throw new RuntimeException('--file and --global can not be combined');
         }
 
         $io = $this->getIO();
@@ -193,23 +198,23 @@ EOT
         // Initialize the global file if it's not there, ignoring any warnings or notices
         if ($input->getOption('global') && !$this->configFile->exists()) {
             touch($this->configFile->getPath());
-            $this->configFile->write(array('config' => new \ArrayObject));
+            $this->configFile->write(array('config' => new ArrayObject));
             Silencer::call('chmod', $this->configFile->getPath(), 0600);
         }
         if ($input->getOption('global') && !$this->authConfigFile->exists()) {
             touch($this->authConfigFile->getPath());
-            $this->authConfigFile->write(array('bitbucket-oauth' => new \ArrayObject, 'github-oauth' => new \ArrayObject, 'gitlab-oauth' => new \ArrayObject, 'gitlab-token' => new \ArrayObject, 'http-basic' => new \ArrayObject, 'bearer' => new \ArrayObject));
+            $this->authConfigFile->write(array('bitbucket-oauth' => new ArrayObject, 'github-oauth' => new ArrayObject, 'gitlab-oauth' => new ArrayObject, 'gitlab-token' => new ArrayObject, 'http-basic' => new ArrayObject, 'bearer' => new ArrayObject));
             Silencer::call('chmod', $this->authConfigFile->getPath(), 0600);
         }
 
         if (!$this->configFile->exists()) {
-            throw new \RuntimeException(sprintf('File "%s" cannot be found in the current directory', $configFile));
+            throw new RuntimeException(sprintf('File "%s" cannot be found in the current directory', $configFile));
         }
     }
 
     /**
      * @return int
-     * @throws \Seld\JsonLint\ParsingException
+     * @throws ParsingException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -254,7 +259,7 @@ EOT
 
         // If the user enters in a config variable, parse it and save to file
         if (array() !== $input->getArgument('setting-value') && $input->getOption('unset')) {
-            throw new \RuntimeException('You can not combine a setting value with --unset');
+            throw new RuntimeException('You can not combine a setting value with --unset');
         }
 
         // show the value if no value is provided
@@ -267,7 +272,7 @@ EOT
                     $value = isset($data['repositories']) ? $data['repositories'] : array();
                 } else {
                     if (!isset($data['repositories'][$matches[1]])) {
-                        throw new \InvalidArgumentException('There is no '.$matches[1].' repository defined');
+                        throw new InvalidArgumentException('There is no '.$matches[1].' repository defined');
                     }
 
                     $value = $data['repositories'][$matches[1]];
@@ -291,7 +296,7 @@ EOT
                 }
 
                 if (!$match) {
-                    throw new \RuntimeException($settingKey.' is not defined.');
+                    throw new RuntimeException($settingKey.' is not defined.');
                 }
 
                 $value = $data;
@@ -300,7 +305,7 @@ EOT
             } elseif (isset($rawData[$settingKey]) && in_array($settingKey, $properties, true)) {
                 $value = $rawData[$settingKey];
             } else {
-                throw new \RuntimeException($settingKey.' is not defined');
+                throw new RuntimeException($settingKey.' is not defined');
             }
 
             if (is_array($value)) {
@@ -546,7 +551,7 @@ EOT
 
             list($validator) = $uniqueConfigValues['preferred-install'];
             if (!$validator($values[0])) {
-                throw new \RuntimeException('Invalid value for '.$settingKey.'. Should be one of: auto, source, or dist');
+                throw new RuntimeException('Invalid value for '.$settingKey.'. Should be one of: auto, source, or dist');
             }
 
             $this->configSource->addConfigSetting($settingKey, $values[0]);
@@ -563,7 +568,7 @@ EOT
             }
 
             if (true !== $booleanValidator($values[0])) {
-                throw new \RuntimeException(sprintf(
+                throw new RuntimeException(sprintf(
                     '"%s" is an invalid value',
                     $values[0]
                 ));
@@ -631,7 +636,7 @@ EOT
         );
 
         if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || strpos($settingKey, 'extra.') === 0)) {
-            throw new \InvalidArgumentException('The ' . $settingKey . ' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
+            throw new InvalidArgumentException('The ' . $settingKey . ' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
         }
         if ($input->getOption('unset') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]))) {
             $this->configSource->removeProperty($settingKey);
@@ -682,7 +687,7 @@ EOT
                 }
             }
 
-            throw new \RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs https://bar.com');
+            throw new RuntimeException('You must pass the type and a url. Example: php composer.phar config repositories.foo vcs https://bar.com');
         }
 
         // handle extra
@@ -763,7 +768,7 @@ EOT
 
             if ($matches[1] === 'bitbucket-oauth') {
                 if (2 !== count($values)) {
-                    throw new \RuntimeException('Expected two arguments (consumer-key, consumer-secret), got '.count($values));
+                    throw new RuntimeException('Expected two arguments (consumer-key, consumer-secret), got '.count($values));
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('consumer-key' => $values[0], 'consumer-secret' => $values[1]));
@@ -772,13 +777,13 @@ EOT
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'token' => $values[1]));
             } elseif (in_array($matches[1], array('github-oauth', 'gitlab-oauth', 'gitlab-token', 'bearer'), true)) {
                 if (1 !== count($values)) {
-                    throw new \RuntimeException('Too many arguments, expected only one token');
+                    throw new RuntimeException('Too many arguments, expected only one token');
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $values[0]);
             } elseif ($matches[1] === 'http-basic') {
                 if (2 !== count($values)) {
-                    throw new \RuntimeException('Expected two arguments (username, password), got '.count($values));
+                    throw new RuntimeException('Expected two arguments (username, password), got '.count($values));
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'password' => $values[1]));
@@ -800,7 +805,7 @@ EOT
             return 0;
         }
 
-        throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
+        throw new InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
     }
 
     /**
@@ -815,11 +820,11 @@ EOT
     {
         list($validator, $normalizer) = $callbacks;
         if (1 !== count($values)) {
-            throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
+            throw new RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
         }
 
         if (true !== $validation = $validator($values[0])) {
-            throw new \RuntimeException(sprintf(
+            throw new RuntimeException(sprintf(
                 '"%s" is an invalid value'.($validation ? ' ('.$validation.')' : ''),
                 $values[0]
             ));
@@ -850,7 +855,7 @@ EOT
     {
         list($validator, $normalizer) = $callbacks;
         if (true !== $validation = $validator($values)) {
-            throw new \RuntimeException(sprintf(
+            throw new RuntimeException(sprintf(
                 '%s is an invalid value'.($validation ? ' ('.$validation.')' : ''),
                 json_encode($values)
             ));

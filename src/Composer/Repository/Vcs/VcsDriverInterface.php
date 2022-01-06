@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use DateTime;
 use Composer\Config;
 use Composer\IO\IOInterface;
 
@@ -48,7 +49,7 @@ interface VcsDriverInterface
      * Get the changedate for $identifier.
      *
      * @param  string         $identifier
-     * @return \DateTime|null
+     * @return DateTime|null
      */
     public function getChangeDate($identifier);
 

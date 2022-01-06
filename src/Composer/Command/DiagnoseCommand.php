@@ -12,6 +12,9 @@
 
 namespace Composer\Command;
 
+use Exception;
+use Phar;
+use InvalidArgumentException;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\Config;
@@ -140,7 +143,7 @@ EOT
                 } else {
                     $this->outputResult(true);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 if ($e instanceof TransportException && $e->getCode() === 401) {
                     $this->outputResult('<comment>The oauth token for github.com seems invalid, run "composer config --global --unset github-oauth.github.com" to remove it</comment>');
                 } else {
@@ -284,7 +287,7 @@ EOT
     }
 
     /**
-     * @return string|true|\Exception
+     * @return string|true|Exception
      */
     private function checkHttpProxy()
     {
@@ -304,7 +307,7 @@ EOT
             if (hash('sha256', $provider) !== $hash) {
                 return 'It seems that your proxy is modifying http traffic on the fly';
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $e;
         }
 
@@ -315,7 +318,7 @@ EOT
      * @param string $domain
      * @param string $token
      *
-     * @return string|true|\Exception
+     * @return string|true|Exception
      */
     private function checkGithubOauth($domain, $token)
     {
@@ -333,7 +336,7 @@ EOT
             ));
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($e instanceof TransportException && $e->getCode() === 401) {
                 return '<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>';
             }
@@ -413,7 +416,7 @@ EOT
     }
 
     /**
-     * @return string|\Exception|true
+     * @return string|Exception|true
      */
     private function checkVersion(Config $config)
     {
@@ -425,7 +428,7 @@ EOT
         $versionsUtil = new Versions($config, $this->httpDownloader);
         try {
             $latest = $versionsUtil->getLatest();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $e;
         }
 
@@ -457,7 +460,7 @@ EOT
     }
 
     /**
-     * @param bool|string|string[]|\Exception $result
+     * @param bool|string|string[]|Exception $result
      *
      * @return void
      */
@@ -472,7 +475,7 @@ EOT
 
         $hadError = false;
         $hadWarning = false;
-        if ($result instanceof \Exception) {
+        if ($result instanceof Exception) {
             $result = '<error>['.get_class($result).'] '.$result->getMessage().'</error>';
         }
 
@@ -529,7 +532,7 @@ EOT
             $errors['json'] = true;
         }
 
-        if (!extension_loaded(\Phar::class)) {
+        if (!extension_loaded(Phar::class)) {
             $errors['phar'] = true;
         }
 
@@ -657,7 +660,7 @@ EOT
                         break;
 
                     default:
-                        throw new \InvalidArgumentException(sprintf("DiagnoseCommand: Unknown error type \"%s\". Please report at https://github.com/composer/composer/issues/new.", $error));
+                        throw new InvalidArgumentException(sprintf("DiagnoseCommand: Unknown error type \"%s\". Please report at https://github.com/composer/composer/issues/new.", $error));
                 }
                 $out($text, 'error');
             }
@@ -724,7 +727,7 @@ EOT
                         break;
 
                     default:
-                        throw new \InvalidArgumentException(sprintf("DiagnoseCommand: Unknown warning type \"%s\". Please report at https://github.com/composer/composer/issues/new.", $warning));
+                        throw new InvalidArgumentException(sprintf("DiagnoseCommand: Unknown warning type \"%s\". Please report at https://github.com/composer/composer/issues/new.", $warning));
                 }
                 $out($text, 'comment');
             }

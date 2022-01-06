@@ -12,6 +12,8 @@
 
 namespace Composer\Downloader;
 
+use PharData;
+use function React\Promise\resolve;
 use Composer\Package\PackageInterface;
 
 /**
@@ -27,9 +29,9 @@ class TarDownloader extends ArchiveDownloader
     protected function extract(PackageInterface $package, $file, $path)
     {
         // Can throw an UnexpectedValueException
-        $archive = new \PharData($file);
+        $archive = new PharData($file);
         $archive->extractTo($path, null, true);
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 }

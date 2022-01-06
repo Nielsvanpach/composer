@@ -12,6 +12,8 @@
 
 namespace Composer\Command;
 
+use Exception;
+use LogicException;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
@@ -121,7 +123,7 @@ EOT
      * @param bool $ignoreFilters
      *
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
     protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null, $ignoreFilters = false, Composer $composer = null)
     {
@@ -194,7 +196,7 @@ EOT
         }
 
         if (!$package instanceof CompletePackageInterface) {
-            throw new \LogicException('Expected a CompletePackageInterface instance but found '.get_class($package));
+            throw new LogicException('Expected a CompletePackageInterface instance but found '.get_class($package));
         }
 
         return $package;

@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use ErrorException;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 
@@ -34,7 +35,7 @@ class ErrorHandler
      * @param int    $line    Line number the error was raised at
      *
      * @static
-     * @throws \ErrorException
+     * @throws ErrorException
      * @return bool
      */
     public static function handle($level, $message, $file, $line)
@@ -50,7 +51,7 @@ class ErrorHandler
         }
 
         if ($level !== E_DEPRECATED && $level !== E_USER_DEPRECATED) {
-            throw new \ErrorException($message, 0, $level, $file, $line);
+            throw new ErrorException($message, 0, $level, $file, $line);
         }
 
         if (self::$io) {

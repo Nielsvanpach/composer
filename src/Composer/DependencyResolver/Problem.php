@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use LogicException;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
@@ -87,7 +88,7 @@ class Problem
             $rule = current($reasons);
 
             if (!in_array($rule->getReason(), array(Rule::RULE_ROOT_REQUIRE, Rule::RULE_FIXED), true)) {
-                throw new \LogicException("Single reason problems must contain a request rule.");
+                throw new LogicException("Single reason problems must contain a request rule.");
             }
 
             $reasonData = $rule->getReasonData();

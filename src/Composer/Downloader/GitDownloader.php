@@ -12,6 +12,9 @@
 
 namespace Composer\Downloader;
 
+use RuntimeException;
+use DateTime;
+use function React\Promise\resolve;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
@@ -74,10 +77,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 $this->cachedPackages[$package->getId()][$ref] = true;
             }
         } elseif (null === $gitVersion) {
-            throw new \RuntimeException('git was not found in your PATH, skipping source download');
+            throw new RuntimeException('git was not found in your PATH, skipping source download');
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -108,7 +111,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $msg = "Cloning ".$this->getShortHash($ref);
             $command = 'git clone --no-checkout -- %url% %path% && cd '.$flag.'%path% && git remote add composer -- %url% && git fetch composer && git remote set-url origin -- %sanitizedUrl% && git remote set-url composer -- %sanitizedUrl%';
             if (Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
-                throw new \RuntimeException('The required git reference for '.$package->getName().' is not in cache and network is disabled, aborting');
+                throw new RuntimeException('The required git reference for '.$package->getName().' is not in cache and network is disabled, aborting');
             }
         }
 
@@ -142,7 +145,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $package->setSourceReference($newRef);
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -153,7 +156,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
         if (!$this->hasMetadataRepository($path)) {
-            throw new \RuntimeException('The .git directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
+            throw new RuntimeException('The .git directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
         $cachePath = $this->config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', $url).'/';
@@ -166,7 +169,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $msg = "Checking out ".$this->getShortHash($ref);
             $command = '(git remote set-url composer -- %url% && git rev-parse --quiet --verify %ref% || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- %sanitizedUrl%';
             if (Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
-                throw new \RuntimeException('The required git reference for '.$target->getName().' is not in cache and network is disabled, aborting');
+                throw new RuntimeException('The required git reference for '.$target->getName().' is not in cache and network is disabled, aborting');
             }
         }
 
@@ -207,7 +210,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $this->updateOriginUrl($path, $target->getSourceUrl());
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -222,7 +225,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $command = 'git status --porcelain --untracked-files=no';
         if (0 !== $this->process->execute($command, $output, $path)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
         return trim($output) ?: null;
@@ -241,7 +244,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $command = 'git show-ref --head -d';
         if (0 !== $this->process->execute($command, $output, $path)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
         $refs = trim($output);
@@ -292,7 +295,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 foreach ($remoteBranches as $remoteBranch) {
                     $command = sprintf('git diff --name-status %s...%s --', $remoteBranch, $branch);
                     if (0 !== $this->process->execute($command, $output, $path)) {
-                        throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+                        throw new RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
                     }
 
                     $output = trim($output);
@@ -311,7 +314,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 // update list of refs after fetching
                 $command = 'git show-ref --head -d';
                 if (0 !== $this->process->execute($command, $output, $path)) {
-                    throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+                    throw new RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
                 }
                 $refs = trim($output);
             }
@@ -335,11 +338,11 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $unpushed = $this->getUnpushedChanges($package, $path);
         if ($unpushed && ($this->io->isInteractive() || $this->config->get('discard-changes') !== true)) {
-            throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch: '."\n".$unpushed);
+            throw new RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch: '."\n".$unpushed);
         }
 
         if (!$changes = $this->getLocalChanges($package, $path)) {
-            return \React\Promise\resolve();
+            return resolve();
         }
 
         if (!$this->io->isInteractive()) {
@@ -382,7 +385,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                     break 2;
 
                 case 'n':
-                    throw new \RuntimeException('Update aborted');
+                    throw new RuntimeException('Update aborted');
 
                 case 'v':
                     $this->io->writeError($changes);
@@ -409,7 +412,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             }
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -422,7 +425,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             unset($this->hasStashedChanges[$path]);
             $this->io->writeError('    <info>Re-applying stashed changes</info>');
             if (0 !== $this->process->execute('git stash pop', $output, $path)) {
-                throw new \RuntimeException("Failed to apply stashed changes:\n\n".$this->process->getErrorOutput());
+                throw new RuntimeException("Failed to apply stashed changes:\n\n".$this->process->getErrorOutput());
             }
         }
 
@@ -435,8 +438,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      * @param  string            $path
      * @param  string            $reference
      * @param  string            $branch
-     * @param  \DateTime         $date
-     * @throws \RuntimeException
+     * @param DateTime $date
+     * @throws RuntimeException
      * @return null|string       if a string is returned, it is the commit reference that was checked out if the original could not be found
      */
     protected function updateToCommit($path, $reference, $branch, $date)
@@ -494,7 +497,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $this->io->writeError('    <warning>'.$reference.' is gone (history was rewritten?)</warning>');
         }
 
-        throw new \RuntimeException(Url::sanitize('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()));
+        throw new RuntimeException(Url::sanitize('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()));
     }
 
     /**
@@ -538,7 +541,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $command = sprintf('git log %s..%s --pretty=format:"%%h - %%an: %%s"'.GitUtil::getNoShowSignatureFlag($this->process), ProcessExecutor::escape($fromReference), ProcessExecutor::escape($toReference));
 
         if (0 !== $this->process->execute($command, $output, $path)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
         return $output;
@@ -549,18 +552,18 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      *
      * @return PromiseInterface
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function discardChanges($path)
     {
         $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git clean -df && git reset --hard', $output, $path)) {
-            throw new \RuntimeException("Could not reset changes\n\n:".$output);
+            throw new RuntimeException("Could not reset changes\n\n:".$output);
         }
 
         $this->hasDiscardedChanges[$path] = true;
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -568,18 +571,18 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      *
      * @return PromiseInterface
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function stashChanges($path)
     {
         $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git stash --include-untracked', $output, $path)) {
-            throw new \RuntimeException("Could not stash changes\n\n:".$output);
+            throw new RuntimeException("Could not stash changes\n\n:".$output);
         }
 
         $this->hasStashedChanges[$path] = true;
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -587,13 +590,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      *
      * @return void
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function viewDiff($path)
     {
         $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git diff HEAD', $output, $path)) {
-            throw new \RuntimeException("Could not view diff\n\n:".$output);
+            throw new RuntimeException("Could not view diff\n\n:".$output);
         }
 
         $this->io->writeError($output);

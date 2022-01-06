@@ -12,6 +12,8 @@
 
 namespace Composer\Repository\Vcs;
 
+use RuntimeException;
+use DateTime;
 use Composer\Config;
 use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
@@ -293,7 +295,7 @@ class GitHubDriver extends VcsDriver
         $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/' . $file . '?ref='.urlencode($identifier);
         $resource = $this->getContents($resource)->decodeJson();
         if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content']))) {
-            throw new \RuntimeException('Could not retrieve ' . $file . ' for '.$identifier);
+            throw new RuntimeException('Could not retrieve ' . $file . ' for '.$identifier);
         }
 
         return $content;
@@ -311,7 +313,7 @@ class GitHubDriver extends VcsDriver
         $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/commits/'.urlencode($identifier);
         $commit = $this->getContents($resource)->decodeJson();
 
-        return new \DateTime($commit['commit']['committer']['date']);
+        return new DateTime($commit['commit']['committer']['date']);
     }
 
     /**
@@ -558,7 +560,7 @@ class GitHubDriver extends VcsDriver
      * @phpstan-impure
      *
      * @return true
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function attemptCloneFallback()
     {
@@ -572,7 +574,7 @@ class GitHubDriver extends VcsDriver
             $this->setupGitDriver($this->generateSshUrl());
 
             return true;
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $this->gitDriver = null;
 
             $this->io->writeError('<error>Failed to clone the '.$this->generateSshUrl().' repository, try running in interactive mode so that you can enter your GitHub credentials</error>');

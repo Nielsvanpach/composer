@@ -12,6 +12,11 @@
 
 namespace Composer\Downloader;
 
+use InvalidArgumentException;
+use LogicException;
+use RuntimeException;
+use Exception;
+use function React\Promise\resolve;
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
@@ -112,28 +117,28 @@ class DownloadManager
      * Returns downloader for a specific installation type.
      *
      * @param  string                    $type installation type
-     * @throws \InvalidArgumentException if downloader for provided type is not registered
+     * @throws InvalidArgumentException if downloader for provided type is not registered
      * @return DownloaderInterface
      */
     public function getDownloader($type)
     {
         $type = strtolower($type);
         if (!isset($this->downloaders[$type])) {
-            throw new \InvalidArgumentException(sprintf('Unknown downloader type: %s. Available types: %s.', $type, implode(', ', array_keys($this->downloaders))));
+            throw new InvalidArgumentException(sprintf('Unknown downloader type: %s. Available types: %s.', $type, implode(', ', array_keys($this->downloaders))));
         }
 
         return $this->downloaders[$type];
     }
 
     /**
-     * Returns downloader for already installed package.
-     *
-     * @param  PackageInterface          $package package instance
-     * @throws \InvalidArgumentException if package has no installation source specified
-     * @throws \LogicException           if specific downloader used to load package with
-     *                                           wrong type
-     * @return DownloaderInterface|null
-     */
+    * Returns downloader for already installed package.
+    *
+    * @param  PackageInterface          $package package instance
+     * @throws InvalidArgumentException if package has no installation source specified
+     * @throws LogicException if specific downloader used to load package with
+                                         wrong type
+    * @return DownloaderInterface|null
+    */
     public function getDownloaderForPackage(PackageInterface $package)
     {
         $installationSource = $package->getInstallationSource();
@@ -147,13 +152,13 @@ class DownloadManager
         } elseif ('source' === $installationSource) {
             $downloader = $this->getDownloader($package->getSourceType());
         } else {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Package '.$package.' does not have an installation source set'
             );
         }
 
         if ($installationSource !== $downloader->getInstallationSource()) {
-            throw new \LogicException(sprintf(
+            throw new LogicException(sprintf(
                 'Downloader "%s" is a %s type downloader and can not be used to download %s for package %s',
                 get_class($downloader),
                 $downloader->getInstallationSource(),
@@ -180,8 +185,8 @@ class DownloadManager
      * @param string                $targetDir   target dir
      * @param PackageInterface|null $prevPackage previous package instance in case of updates
      *
-     * @throws \InvalidArgumentException if package have no urls to download from
-     * @throws \RuntimeException
+     * @throws InvalidArgumentException if package have no urls to download from
+     * @throws RuntimeException
      * @return PromiseInterface
      */
     public function download(PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
@@ -203,11 +208,11 @@ class DownloadManager
 
             $downloader = $self->getDownloaderForPackage($package);
             if (!$downloader) {
-                return \React\Promise\resolve();
+                return resolve();
             }
 
             $handleError = function ($e) use ($sources, $source, $package, $io, $download) {
-                if ($e instanceof \RuntimeException && !$e instanceof IrrecoverableDownloadException) {
+                if ($e instanceof RuntimeException && !$e instanceof IrrecoverableDownloadException) {
                     if (!$sources) {
                         throw $e;
                     }
@@ -227,11 +232,11 @@ class DownloadManager
 
             try {
                 $result = $downloader->download($package, $targetDir, $prevPackage);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return $handleError($e);
             }
             if (!$result instanceof PromiseInterface) {
-                return \React\Promise\resolve($result);
+                return resolve($result);
             }
 
             $res = $result->then(function ($res) {
@@ -262,7 +267,7 @@ class DownloadManager
             return $downloader->prepare($type, $package, $targetDir, $prevPackage);
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -271,8 +276,8 @@ class DownloadManager
      * @param PackageInterface $package   package instance
      * @param string           $targetDir target dir
      *
-     * @throws \InvalidArgumentException if package have no urls to download from
-     * @throws \RuntimeException
+     * @throws InvalidArgumentException if package have no urls to download from
+     * @throws RuntimeException
      * @return PromiseInterface|null
      */
     public function install(PackageInterface $package, $targetDir)
@@ -283,7 +288,7 @@ class DownloadManager
             return $downloader->install($package, $targetDir);
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -293,7 +298,7 @@ class DownloadManager
      * @param PackageInterface $target    target package version
      * @param string           $targetDir target dir
      *
-     * @throws \InvalidArgumentException if initial package is not installed
+     * @throws InvalidArgumentException if initial package is not installed
      * @return PromiseInterface|null
      */
     public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
@@ -304,7 +309,7 @@ class DownloadManager
 
         // no downloaders present means update from metapackage to metapackage, nothing to do
         if (!$initialDownloader && !$downloader) {
-            return \React\Promise\resolve();
+            return resolve();
         }
 
         // if we have a downloader present before, but not after, the package became a metapackage and its files should be removed
@@ -317,7 +322,7 @@ class DownloadManager
         if ($initialType === $targetType) {
             try {
                 return $downloader->update($initial, $target, $targetDir);
-            } catch (\RuntimeException $e) {
+            } catch (RuntimeException $e) {
                 if (!$this->io->isInteractive()) {
                     throw $e;
                 }
@@ -358,7 +363,7 @@ class DownloadManager
             return $downloader->remove($package, $targetDir);
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -379,7 +384,7 @@ class DownloadManager
             return $downloader->cleanup($type, $package, $targetDir, $prevPackage);
         }
 
-        return \React\Promise\resolve();
+        return resolve();
     }
 
     /**
@@ -424,7 +429,7 @@ class DownloadManager
         }
 
         if (empty($sources)) {
-            throw new \InvalidArgumentException('Package '.$package.' must have a source or dist specified');
+            throw new InvalidArgumentException('Package '.$package.' must have a source or dist specified');
         }
 
         if (

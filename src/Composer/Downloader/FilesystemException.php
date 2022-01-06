@@ -12,19 +12,20 @@
 
 namespace Composer\Downloader;
 
+use Exception;
 /**
  * Exception thrown when issues exist on local filesystem
  *
  * @author Javier Spagnoletti <jspagnoletti@javierspagnoletti.com.ar>
  */
-class FilesystemException extends \Exception
+class FilesystemException extends Exception
 {
     /**
      * @param string          $message
      * @param int             $code
-     * @param \Exception|null $previous
+     * @param Exception|null $previous
      */
-    public function __construct($message = '', $code = 0, \Exception $previous = null)
+    public function __construct($message = '', $code = 0, Exception $previous = null)
     {
         parent::__construct("Filesystem exception: \n".$message, $code, $previous);
     }

@@ -12,6 +12,18 @@
 
 namespace Composer\Repository;
 
+use Composer\Repository\Vcs\GitHubDriver;
+use Composer\Repository\Vcs\GitLabDriver;
+use Composer\Repository\Vcs\GitBitbucketDriver;
+use Composer\Repository\Vcs\GitDriver;
+use Composer\Repository\Vcs\HgDriver;
+use Composer\Repository\Vcs\PerforceDriver;
+use Composer\Repository\Vcs\FossilDriver;
+use Composer\Repository\Vcs\SvnDriver;
+use InvalidArgumentException;
+use Exception;
+use Composer\Package\CompletePackage;
+use Composer\Package\CompleteAliasPackage;
 use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\VcsDriverInterface;
@@ -78,16 +90,16 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     {
         parent::__construct();
         $this->drivers = $drivers ?: array(
-            'github' => \Composer\Repository\Vcs\GitHubDriver::class,
-            'gitlab' => \Composer\Repository\Vcs\GitLabDriver::class,
-            'bitbucket' => \Composer\Repository\Vcs\GitBitbucketDriver::class,
-            'git-bitbucket' => \Composer\Repository\Vcs\GitBitbucketDriver::class,
-            'git' => \Composer\Repository\Vcs\GitDriver::class,
-            'hg' => \Composer\Repository\Vcs\HgDriver::class,
-            'perforce' => \Composer\Repository\Vcs\PerforceDriver::class,
-            'fossil' => \Composer\Repository\Vcs\FossilDriver::class,
+            'github' => GitHubDriver::class,
+            'gitlab' => GitLabDriver::class,
+            'bitbucket' => GitBitbucketDriver::class,
+            'git-bitbucket' => GitBitbucketDriver::class,
+            'git' => GitDriver::class,
+            'hg' => HgDriver::class,
+            'perforce' => PerforceDriver::class,
+            'fossil' => FossilDriver::class,
             // svn must be last because identifying a subversion server for sure is practically impossible
-            'svn' => \Composer\Repository\Vcs\SvnDriver::class,
+            'svn' => SvnDriver::class,
         );
 
         $this->url = $repoConfig['url'];
@@ -197,7 +209,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         $driver = $this->getDriver();
         if (!$driver) {
-            throw new \InvalidArgumentException('No driver found to handle VCS repository '.$this->url);
+            throw new InvalidArgumentException('No driver found to handle VCS repository '.$this->url);
         }
 
         $this->versionParser = new VersionParser;
@@ -212,7 +224,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $data = $driver->getComposerInformation($driver->getRootIdentifier());
                 $this->packageName = !empty($data['name']) ? $data['name'] : null;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($e instanceof TransportException && $this->shouldRethrowTransportException($e)) {
                 throw $e;
             }
@@ -302,7 +314,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 }
 
                 $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 if ($e instanceof TransportException) {
                     $this->versionTransportExceptions['tags'][$tag] = $e;
                     if ($e->getCode() === 404) {
@@ -404,7 +416,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                     $this->io->writeError('<warning>Skipped branch '.$branch.', no composer file was found (' . $e->getCode() . ' HTTP status code)</warning>');
                 }
                 continue;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 if (!$isVeryVerbose) {
                     $this->io->writeError('');
                 }
@@ -464,7 +476,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             $this->versionParser->parseConstraints($normalizedBranch);
 
             return $normalizedBranch;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         return false;
@@ -479,7 +491,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     {
         try {
             return $this->versionParser->normalize($version);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         return false;
@@ -492,7 +504,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
      * @param bool $isVeryVerbose
      * @param bool $isDefaultBranch
      *
-     * @return \Composer\Package\CompletePackage|\Composer\Package\CompleteAliasPackage|null|false null if no cache present, false if the absence of a version was cached
+     * @return CompletePackage|CompleteAliasPackage|null|false null if no cache present, false if the absence of a version was cached
      */
     private function getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose, $isDefaultBranch = false)
     {

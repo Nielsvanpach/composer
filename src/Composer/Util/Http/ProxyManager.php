@@ -12,6 +12,7 @@
 
 namespace Composer\Util\Http;
 
+use RuntimeException;
 use Composer\Downloader\TransportException;
 use Composer\Util\NoProxyPattern;
 use Composer\Util\Url;
@@ -137,7 +138,7 @@ class ProxyManager
     {
         try {
             list($httpProxy, $httpsProxy, $noProxy) = ProxyHelper::getProxyData();
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $this->error = $e->getMessage();
 
             return;

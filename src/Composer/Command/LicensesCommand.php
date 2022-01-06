@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use RuntimeException;
 use Composer\Json\JsonFile;
 use Composer\Package\CompletePackageInterface;
 use Composer\Plugin\CommandEvent;
@@ -147,7 +148,7 @@ EOT
                 );
                 break;
             default:
-                throw new \RuntimeException(sprintf('Unsupported format "%s".  See help for supported formats.', $format));
+                throw new RuntimeException(sprintf('Unsupported format "%s".  See help for supported formats.', $format));
         }
 
         return 0;

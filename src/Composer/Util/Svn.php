@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use RuntimeException;
+use LogicException;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
@@ -35,7 +37,7 @@ class Svn
     protected $hasAuth;
 
     /**
-     * @var \Composer\IO\IOInterface
+     * @var IOInterface
      */
     protected $io;
 
@@ -60,7 +62,7 @@ class Svn
     protected $qtyAuthTries = 0;
 
     /**
-     * @var \Composer\Config
+     * @var Config
      */
     protected $config;
 
@@ -71,7 +73,7 @@ class Svn
 
     /**
      * @param string                   $url
-     * @param \Composer\IO\IOInterface $io
+     * @param IOInterface $io
      * @param Config                   $config
      * @param ProcessExecutor          $process
      */
@@ -102,7 +104,7 @@ class Svn
      * @param string $path    Target for a checkout
      * @param bool   $verbose Output all output to the user
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return string
      */
     public function execute($command, $url, $cwd = null, $path = null, $verbose = false)
@@ -122,7 +124,7 @@ class Svn
      * @param string $cwd     Working directory
      * @param bool   $verbose Output all output to the user
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return string
      */
     public function executeLocal($command, $path, $cwd = null, $verbose = false)
@@ -172,7 +174,7 @@ class Svn
             && false === stripos($fullOutput, 'authorization failed')
             && false === stripos($fullOutput, 'svn: E170001:')
             && false === stripos($fullOutput, 'svn: E215004:')) {
-            throw new \RuntimeException($fullOutput);
+            throw new RuntimeException($fullOutput);
         }
 
         if (!$this->hasAuth()) {
@@ -185,7 +187,7 @@ class Svn
             return $this->executeWithAuthRetry($svnCommand, $cwd, $url, $path, $verbose);
         }
 
-        throw new \RuntimeException(
+        throw new RuntimeException(
             'wrong credentials provided ('.$fullOutput.')'
         );
     }
@@ -202,14 +204,14 @@ class Svn
     /**
      * Repositories requests credentials, let's put them in.
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return \Composer\Util\Svn
      */
     protected function doAuthDance()
     {
         // cannot ask for credentials in non interactive mode
         if (!$this->io->isInteractive()) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'can not ask for authentication in non interactive mode'
             );
         }
@@ -275,13 +277,13 @@ class Svn
     /**
      * Get the password for the svn command. Can be empty.
      *
-     * @throws \LogicException
+     * @throws LogicException
      * @return string
      */
     protected function getPassword()
     {
         if ($this->credentials === null) {
-            throw new \LogicException("No svn auth detected.");
+            throw new LogicException("No svn auth detected.");
         }
 
         return $this->credentials['password'];
@@ -290,13 +292,13 @@ class Svn
     /**
      * Get the username for the svn command.
      *
-     * @throws \LogicException
+     * @throws LogicException
      * @return string
      */
     protected function getUsername()
     {
         if ($this->credentials === null) {
-            throw new \LogicException("No svn auth detected.");
+            throw new LogicException("No svn auth detected.");
         }
 
         return $this->credentials['username'];

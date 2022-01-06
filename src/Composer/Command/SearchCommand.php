@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use InvalidArgumentException;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Symfony\Component\Console\Input\InputInterface;
@@ -81,7 +82,7 @@ EOT
         $mode = RepositoryInterface::SEARCH_FULLTEXT;
         if ($input->getOption('only-name') === true) {
             if ($input->getOption('only-vendor') === true) {
-                throw new \InvalidArgumentException('--only-name and --only-vendor cannot be used together');
+                throw new InvalidArgumentException('--only-name and --only-vendor cannot be used together');
             }
             $mode = RepositoryInterface::SEARCH_NAME;
         } elseif ($input->getOption('only-vendor') === true) {

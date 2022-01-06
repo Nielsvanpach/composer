@@ -12,6 +12,38 @@
 
 namespace Composer;
 
+use RuntimeException;
+use InvalidArgumentException;
+use UnexpectedValueException;
+use Composer\Package\RootPackage;
+use Composer\Package\Locker;
+use Composer\Repository\InstalledFilesystemRepository;
+use Exception;
+use Composer\Downloader\DownloadManager;
+use Composer\Downloader\GitDownloader;
+use Composer\Downloader\SvnDownloader;
+use Composer\Downloader\FossilDownloader;
+use Composer\Downloader\HgDownloader;
+use Composer\Downloader\PerforceDownloader;
+use Composer\Downloader\ZipDownloader;
+use Composer\Downloader\RarDownloader;
+use Composer\Downloader\TarDownloader;
+use Composer\Downloader\GzipDownloader;
+use Composer\Downloader\XzDownloader;
+use Composer\Downloader\PharDownloader;
+use Composer\Downloader\FileDownloader;
+use Composer\Downloader\PathDownloader;
+use Composer\Package\Archiver\ArchiveManager;
+use Composer\Package\Archiver\ZipArchiver;
+use Composer\Package\Archiver\PharArchiver;
+use Composer\Plugin\PluginManager;
+use Composer\Installer\InstallationManager;
+use Composer\Installer\BinaryInstaller;
+use Composer\Installer\LibraryInstaller;
+use Composer\Installer\PluginInstaller;
+use Composer\Installer\MetapackageInstaller;
+use Composer\Package\Loader\RootPackageLoader;
+use Composer\Exception\NoSslException;
 use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
@@ -51,7 +83,7 @@ use Seld\JsonLint\JsonParser;
 class Factory
 {
     /**
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return string
      */
     protected static function getHomeDir()
@@ -63,7 +95,7 @@ class Factory
 
         if (Platform::isWindows()) {
             if (!Platform::getEnv('APPDATA')) {
-                throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
+                throw new RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
             }
 
             return rtrim(strtr(Platform::getEnv('APPDATA'), '\\', '/'), '/') . '/Composer';
@@ -297,8 +329,8 @@ class Factory
      * @param  bool                              $disableScripts Whether scripts should not be run
      * @param  string|null                       $cwd
      * @param  bool                              $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
-     * @throws \InvalidArgumentException
-     * @throws \UnexpectedValueException
+     * @throws InvalidArgumentException
+     * @throws UnexpectedValueException
      * @return Composer
      */
     public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true, $disableScripts = false)
@@ -323,7 +355,7 @@ class Factory
                     $message = 'Composer could not find the config file: '.$localConfig;
                 }
                 $instructions = $fullLoad ? 'To initialize a project, please create a composer.json file. See https://getcomposer.org/basic-usage' : '';
-                throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
+                throw new InvalidArgumentException($message.PHP_EOL.$instructions);
             }
 
             try {
@@ -371,7 +403,7 @@ class Factory
             $io->loadConfiguration($config);
 
             // load existing Composer\InstalledVersions instance if available
-            if (!class_exists(\Composer\InstalledVersions::class, false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/InstalledVersions.php')) {
+            if (!class_exists(InstalledVersions::class, false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/InstalledVersions.php')) {
                 include $installedVersionsPath;
             }
         }
@@ -400,7 +432,7 @@ class Factory
         $parser = new VersionParser;
         $guesser = new VersionGuesser($config, $process, $parser);
         $loader = $this->loadRootPackage($rm, $config, $parser, $guesser, $io);
-        $package = $loader->load($localConfig, \Composer\Package\RootPackage::class, $cwd);
+        $package = $loader->load($localConfig, RootPackage::class, $cwd);
         $composer->setPackage($package);
 
         // load local repository
@@ -443,7 +475,7 @@ class Factory
         if ($fullLoad && isset($composerFile)) {
             $lockFile = self::getLockFile($composerFile);
 
-            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $im, file_get_contents($composerFile), $process);
+            $locker = new Locker($io, new JsonFile($lockFile, null, $io), $im, file_get_contents($composerFile), $process);
             $composer->setLocker($locker);
         }
 
@@ -485,7 +517,7 @@ class Factory
             $fs = new Filesystem($process);
         }
 
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io), true, $rootPackage, $fs));
+        $rm->setLocalRepository(new InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io), true, $rootPackage, $fs));
     }
 
     /**
@@ -500,7 +532,7 @@ class Factory
         $composer = null;
         try {
             $composer = $this->createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), $fullLoad, $disableScripts);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $io->writeError('Failed to initialize global composer: '.$e->getMessage(), true, IOInterface::DEBUG);
         }
 
@@ -523,7 +555,7 @@ class Factory
 
         $fs = new Filesystem($process);
 
-        $dm = new Downloader\DownloadManager($io, false, $fs);
+        $dm = new DownloadManager($io, false, $fs);
         switch ($preferred = $config->get('preferred-install')) {
             case 'dist':
                 $dm->setPreferDist(true);
@@ -541,19 +573,19 @@ class Factory
             $dm->setPreferences($preferred);
         }
 
-        $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $process, $fs));
-        $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config, $process, $fs));
-        $dm->setDownloader('fossil', new Downloader\FossilDownloader($io, $config, $process, $fs));
-        $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config, $process, $fs));
-        $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config, $process, $fs));
-        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
-        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
-        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
-        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
-        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('git', new GitDownloader($io, $config, $process, $fs));
+        $dm->setDownloader('svn', new SvnDownloader($io, $config, $process, $fs));
+        $dm->setDownloader('fossil', new FossilDownloader($io, $config, $process, $fs));
+        $dm->setDownloader('hg', new HgDownloader($io, $config, $process, $fs));
+        $dm->setDownloader('perforce', new PerforceDownloader($io, $config, $process, $fs));
+        $dm->setDownloader('zip', new ZipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('rar', new RarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('tar', new TarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('gzip', new GzipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('xz', new XzDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('phar', new PharDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('file', new FileDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('path', new PathDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
 
         return $dm;
     }
@@ -563,11 +595,11 @@ class Factory
      * @param  Downloader\DownloadManager $dm     Manager use to download sources
      * @return Archiver\ArchiveManager
      */
-    public function createArchiveManager(Config $config, Downloader\DownloadManager $dm, Loop $loop)
+    public function createArchiveManager(Config $config, DownloadManager $dm, Loop $loop)
     {
-        $am = new Archiver\ArchiveManager($dm, $loop);
-        $am->addArchiver(new Archiver\ZipArchiver);
-        $am->addArchiver(new Archiver\PharArchiver);
+        $am = new ArchiveManager($dm, $loop);
+        $am->addArchiver(new ZipArchiver);
+        $am->addArchiver(new PharArchiver);
 
         return $am;
     }
@@ -581,7 +613,7 @@ class Factory
      */
     protected function createPluginManager(IOInterface $io, Composer $composer, Composer $globalComposer = null, $disablePlugins = false)
     {
-        return new Plugin\PluginManager($io, $composer, $globalComposer, $disablePlugins);
+        return new PluginManager($io, $composer, $globalComposer, $disablePlugins);
     }
 
     /**
@@ -589,20 +621,20 @@ class Factory
      */
     public function createInstallationManager(Loop $loop, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
-        return new Installer\InstallationManager($loop, $io, $eventDispatcher);
+        return new InstallationManager($loop, $io, $eventDispatcher);
     }
 
     /**
      * @return void
      */
-    protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io, ProcessExecutor $process = null)
+    protected function createDefaultInstallers(InstallationManager $im, Composer $composer, IOInterface $io, ProcessExecutor $process = null)
     {
         $fs = new Filesystem($process);
-        $binaryInstaller = new Installer\BinaryInstaller($io, rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $fs, rtrim($composer->getConfig()->get('vendor-dir'), '/'));
+        $binaryInstaller = new BinaryInstaller($io, rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $fs, rtrim($composer->getConfig()->get('vendor-dir'), '/'));
 
-        $im->addInstaller(new Installer\LibraryInstaller($io, $composer, null, $fs, $binaryInstaller));
-        $im->addInstaller(new Installer\PluginInstaller($io, $composer, $fs, $binaryInstaller));
-        $im->addInstaller(new Installer\MetapackageInstaller($io));
+        $im->addInstaller(new LibraryInstaller($io, $composer, null, $fs, $binaryInstaller));
+        $im->addInstaller(new PluginInstaller($io, $composer, $fs, $binaryInstaller));
+        $im->addInstaller(new MetapackageInstaller($io));
     }
 
     /**
@@ -611,7 +643,7 @@ class Factory
      *
      * @return void
      */
-    protected function purgePackages(InstalledRepositoryInterface $repo, Installer\InstallationManager $im)
+    protected function purgePackages(InstalledRepositoryInterface $repo, InstallationManager $im)
     {
         foreach ($repo->getPackages() as $package) {
             if (!$im->isPackageInstalled($repo, $package)) {
@@ -621,11 +653,11 @@ class Factory
     }
 
     /**
-     * @return Package\Loader\RootPackageLoader
+     * @return RootPackageLoader
      */
     protected function loadRootPackage(RepositoryManager $rm, Config $config, VersionParser $parser, VersionGuesser $guesser, IOInterface $io)
     {
-        return new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);
+        return new RootPackageLoader($rm, $config, $parser, $guesser, $io);
     }
 
     /**
@@ -666,7 +698,7 @@ class Factory
             $warned = true;
             $disableTls = true;
         } elseif (!extension_loaded('openssl')) {
-            throw new Exception\NoSslException('The openssl extension is required for SSL/TLS protection but is not available. '
+            throw new NoSslException('The openssl extension is required for SSL/TLS protection but is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
         }
         $httpDownloaderOptions = array();
@@ -715,14 +747,14 @@ class Factory
     }
 
     /**
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @return string
      */
     private static function getUserDir()
     {
         $home = Platform::getEnv('HOME');
         if (!$home) {
-            throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
+            throw new RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
         }
 
         return rtrim(strtr($home, '\\', '/'), '/');

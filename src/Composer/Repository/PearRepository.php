@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use InvalidArgumentException;
 /**
  * Builds list of package from PEAR channel.
  *
@@ -27,6 +28,6 @@ class PearRepository extends ArrayRepository
 {
     public function __construct()
     {
-        throw new \InvalidArgumentException('The PEAR repository has been removed from Composer 2.x');
+        throw new InvalidArgumentException('The PEAR repository has been removed from Composer 2.x');
     }
 }

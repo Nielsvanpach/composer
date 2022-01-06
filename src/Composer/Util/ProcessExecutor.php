@@ -12,6 +12,9 @@
 
 namespace Composer\Util;
 
+use LogicException;
+use Exception;
+use Throwable;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Symfony\Component\Process\Process;
@@ -129,7 +132,7 @@ class ProcessExecutor
         $this->errorOutput = '';
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
-        if (method_exists(\Symfony\Component\Process\Process::class, 'fromShellCommandline')) {
+        if (method_exists(Process::class, 'fromShellCommandline')) {
             $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
         } else {
             /** @phpstan-ignore-next-line */
@@ -165,7 +168,7 @@ class ProcessExecutor
     public function executeAsync($command, $cwd = null)
     {
         if (!$this->allowAsync) {
-            throw new \LogicException('You must use the ProcessExecutor instance which is part of a Composer\Loop instance to be able to run async processes');
+            throw new LogicException('You must use the ProcessExecutor instance which is part of a Composer\Loop instance to be able to run async processes');
         }
 
         $job = array(
@@ -195,7 +198,7 @@ class ProcessExecutor
                 if (defined('SIGINT')) {
                     $job['process']->signal(SIGINT);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // signal can throw in various conditions, but we don't care if it fails
             }
             $job['process']->stop(1);
@@ -273,16 +276,16 @@ class ProcessExecutor
 
         try {
             // TODO in v3, commands should be passed in as arrays of cmd + args
-            if (method_exists(\Symfony\Component\Process\Process::class, 'fromShellCommandline')) {
+            if (method_exists(Process::class, 'fromShellCommandline')) {
                 $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
             } else {
                 $process = new Process($command, $cwd, null, null, static::getTimeout());
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             call_user_func($job['reject'], $e);
 
             return;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             call_user_func($job['reject'], $e);
 
             return;
@@ -292,11 +295,11 @@ class ProcessExecutor
 
         try {
             $process->start();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             call_user_func($job['reject'], $e);
 
             return;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             call_user_func($job['reject'], $e);
 
             return;

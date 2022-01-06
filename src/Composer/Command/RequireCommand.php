@@ -12,6 +12,9 @@
 
 namespace Composer\Command;
 
+use Seld\JsonLint\ParsingException;
+use Exception;
+use RuntimeException;
 use Composer\DependencyResolver\Request;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Util\Filesystem;
@@ -111,7 +114,7 @@ EOT
 
     /**
      * @return int
-     * @throws \Seld\JsonLint\ParsingException
+     * @throws ParsingException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -203,11 +206,11 @@ EOT
                 !$input->getOption('no-update'),
                 $input->getOption('fixed')
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($this->newlyCreated) {
                 $this->revertComposerFile(false);
 
-                throw new \RuntimeException('No composer.json present in the current directory ('.$this->file.'), this may be the cause of the following exception.', 0, $e);
+                throw new RuntimeException('No composer.json present in the current directory ('.$this->file.'), this may be the cause of the following exception.', 0, $e);
             }
 
             throw $e;
@@ -283,7 +286,7 @@ EOT
 
         try {
             return $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if (!$this->dependencyResolutionCompleted) {
                 $this->revertComposerFile(false);
             }
@@ -349,7 +352,7 @@ EOT
      * @param string $requireKey
      * @param string $removeKey
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
     private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, $requireKey, $removeKey)
     {

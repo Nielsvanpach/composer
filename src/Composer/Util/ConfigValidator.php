@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use Exception;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
@@ -71,7 +72,7 @@ class ConfigValidator
                     $errors[] = $message;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $errors[] = $e->getMessage();
 
             return array($errors, $publishErrors, $warnings);

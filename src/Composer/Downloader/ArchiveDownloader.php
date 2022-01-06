@@ -12,6 +12,11 @@
 
 namespace Composer\Downloader;
 
+use RuntimeException;
+use UnexpectedValueException;
+use Exception;
+use SplFileInfo;
+use function React\Promise\resolve;
 use Composer\Package\PackageInterface;
 use Symfony\Component\Finder\Finder;
 use React\Promise\PromiseInterface;
@@ -59,8 +64,8 @@ abstract class ArchiveDownloader extends FileDownloader
      *
      * @return PromiseInterface
      *
-     * @throws \RuntimeException
-     * @throws \UnexpectedValueException
+     * @throws RuntimeException
+     * @throws UnexpectedValueException
      */
     public function install(PackageInterface $package, $path, $output = true)
     {
@@ -110,13 +115,13 @@ abstract class ArchiveDownloader extends FileDownloader
         $promise = null;
         try {
             $promise = $this->extract($package, $fileName, $temporaryDir);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $cleanup();
             throw $e;
         }
 
         if (!$promise instanceof PromiseInterface) {
-            $promise = \React\Promise\resolve();
+            $promise = resolve();
         }
 
         return $promise->then(function () use ($self, $package, $filesystem, $fileName, $temporaryDir, $path) {
@@ -126,7 +131,7 @@ abstract class ArchiveDownloader extends FileDownloader
              * Returns the folder content, excluding .DS_Store
              *
              * @param  string         $dir Directory
-             * @return \SplFileInfo[]
+             * @return SplFileInfo[]
              */
             $getFolderContent = function ($dir) {
                 $finder = Finder::create()
@@ -158,7 +163,7 @@ abstract class ArchiveDownloader extends FileDownloader
                     $file = (string) $file;
                     if (is_dir($to . '/' . basename($file))) {
                         if (!is_dir($file)) {
-                            throw new \RuntimeException('Installing '.$package.' would lead to overwriting the '.$to.'/'.basename($file).' directory with a file from the package, invalid operation.');
+                            throw new RuntimeException('Installing '.$package.' would lead to overwriting the '.$to.'/'.basename($file).' directory with a file from the package, invalid operation.');
                         }
                         $renameRecursively($file, $to . '/' . basename($file));
                     } else {
@@ -175,7 +180,7 @@ abstract class ArchiveDownloader extends FileDownloader
                     if ($filesystem->removeDirectoryPhp($path)) {
                         $renameAsOne = true;
                     }
-                } catch (\RuntimeException $e) {
+                } catch (RuntimeException $e) {
                     // ignore error, and simply do not renameAsOne
                 }
             }
@@ -228,7 +233,7 @@ abstract class ArchiveDownloader extends FileDownloader
      * @param string $file Extracted file
      * @param string $path Directory
      *
-     * @throws \UnexpectedValueException If can not extract downloaded file to path
+     * @throws UnexpectedValueException If can not extract downloaded file to path
      * @return PromiseInterface|null
      */
     abstract protected function extract(PackageInterface $package, $file, $path);

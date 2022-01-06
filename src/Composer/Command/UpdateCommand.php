@@ -12,6 +12,10 @@
 
 namespace Composer\Command;
 
+use Exception;
+use UnexpectedValueException;
+use InvalidArgumentException;
+use RuntimeException;
 use Composer\Composer;
 use Composer\DependencyResolver\Request;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
@@ -111,7 +115,7 @@ EOT
 
     /**
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -158,7 +162,7 @@ EOT
             } elseif (isset($rootDevRequires[$package])) {
                 $rootDevRequires[$package] = $this->appendConstraintToLink($rootDevRequires[$package], $constraint);
             } else {
-                throw new \UnexpectedValueException('Only root package requirements can receive temporary constraints and '.$package.' is not one');
+                throw new UnexpectedValueException('Only root package requirements can receive temporary constraints and '.$package.' is not one');
             }
         }
         $rootPackage->setRequires($rootRequires);
@@ -255,7 +259,7 @@ EOT
     private function getPackagesInteractively(IOInterface $io, InputInterface $input, OutputInterface $output, Composer $composer, array $packages)
     {
         if (!$input->isInteractive()) {
-            throw new \InvalidArgumentException('--interactive cannot be used in non-interactive terminals.');
+            throw new InvalidArgumentException('--interactive cannot be used in non-interactive terminals.');
         }
 
         $requires = array_merge(
@@ -295,7 +299,7 @@ EOT
 
         $packages = array_filter($packages);
         if (!$packages) {
-            throw new \InvalidArgumentException('You must enter minimum one package.');
+            throw new InvalidArgumentException('You must enter minimum one package.');
         }
 
         $table = new Table($output);
@@ -312,7 +316,7 @@ EOT
             return $packages;
         }
 
-        throw new \RuntimeException('Installation aborted.');
+        throw new RuntimeException('Installation aborted.');
     }
 
     /**

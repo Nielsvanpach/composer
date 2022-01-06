@@ -12,11 +12,12 @@
 
 namespace Composer\Repository;
 
+use Exception;
 /**
  * Exception thrown when a package repository is utterly broken
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class InvalidRepositoryException extends \Exception
+class InvalidRepositoryException extends Exception
 {
 }

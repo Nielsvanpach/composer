@@ -12,6 +12,9 @@
 
 namespace Composer\Installer;
 
+use UnexpectedValueException;
+use Exception;
+use function React\Promise\resolve;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
@@ -54,7 +57,7 @@ class PluginInstaller extends LibraryInstaller
     {
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
-            throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
+            throw new UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
         }
 
         return parent::download($package, $prevPackage);
@@ -67,7 +70,7 @@ class PluginInstaller extends LibraryInstaller
     {
         $promise = parent::install($repo, $package);
         if (!$promise instanceof PromiseInterface) {
-            $promise = \React\Promise\resolve();
+            $promise = resolve();
         }
 
         $pluginManager = $this->composer->getPluginManager();
@@ -77,7 +80,7 @@ class PluginInstaller extends LibraryInstaller
             try {
                 Platform::workaroundFilesystemIssues();
                 $pluginManager->registerPackage($package, true);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $self->rollbackInstall($e, $repo, $package);
             }
         });
@@ -90,7 +93,7 @@ class PluginInstaller extends LibraryInstaller
     {
         $promise = parent::update($repo, $initial, $target);
         if (!$promise instanceof PromiseInterface) {
-            $promise = \React\Promise\resolve();
+            $promise = resolve();
         }
 
         $pluginManager = $this->composer->getPluginManager();
@@ -101,7 +104,7 @@ class PluginInstaller extends LibraryInstaller
                 Platform::workaroundFilesystemIssues();
                 $pluginManager->deactivatePackage($initial);
                 $pluginManager->registerPackage($target, true);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $self->rollbackInstall($e, $repo, $target);
             }
         });
@@ -120,7 +123,7 @@ class PluginInstaller extends LibraryInstaller
      *
      * @return void
      */
-    public function rollbackInstall(\Exception $e, InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function rollbackInstall(Exception $e, InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $this->io->writeError('Plugin initialization failed ('.$e->getMessage().'), uninstalling plugin');
         parent::uninstall($repo, $package);

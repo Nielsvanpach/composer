@@ -12,6 +12,9 @@
 
 namespace Composer\Repository\Vcs;
 
+use RuntimeException;
+use DateTime;
+use DateTimeZone;
 use Composer\Config;
 use Composer\Cache;
 use Composer\Pcre\Preg;
@@ -43,7 +46,7 @@ class HgDriver extends VcsDriver
             $this->repoDir = $this->url;
         } else {
             if (!Cache::isUsable((string) $this->config->get('cache-vcs-dir'))) {
-                throw new \RuntimeException('HgDriver requires a usable cache directory, and it looks like you set it to be disabled');
+                throw new RuntimeException('HgDriver requires a usable cache directory, and it looks like you set it to be disabled');
             }
 
             $cacheDir = $this->config->get('cache-vcs-dir');
@@ -53,7 +56,7 @@ class HgDriver extends VcsDriver
             $fs->ensureDirectoryExists($cacheDir);
 
             if (!is_writable(dirname($this->repoDir))) {
-                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$cacheDir.'" directory is not writable by the current user.');
+                throw new RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$cacheDir.'" directory is not writable by the current user.');
             }
 
             // Ensure we are allowed to use this URL by config
@@ -150,7 +153,7 @@ class HgDriver extends VcsDriver
             $this->repoDir
         );
 
-        return new \DateTime(trim($output), new \DateTimeZone('UTC'));
+        return new DateTime(trim($output), new DateTimeZone('UTC'));
     }
 
     /**

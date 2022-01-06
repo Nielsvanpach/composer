@@ -12,6 +12,11 @@
 
 namespace Composer;
 
+use DateTime;
+use RuntimeException;
+use DateTimeZone;
+use Phar;
+use SplFileInfo;
 use Composer\Json\JsonFile;
 use Composer\CaBundle\CaBundle;
 use Composer\Pcre\Preg;
@@ -32,7 +37,7 @@ class Compiler
     private $version;
     /** @var string */
     private $branchAliasVersion = '';
-    /** @var \DateTime */
+    /** @var DateTime */
     private $versionDate;
 
     /**
@@ -42,7 +47,7 @@ class Compiler
      *
      * @return void
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function compile($pharFile = 'composer.phar')
     {
@@ -52,20 +57,20 @@ class Compiler
 
         $process = new Process(array('git', 'log', '--pretty=%H', '-n1', 'HEAD'), __DIR__);
         if ($process->run() != 0) {
-            throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
+            throw new RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
 
         $process = new Process(array('git', 'log', '-n1', '--pretty=%ci', 'HEAD'), __DIR__);
         if ($process->run() != 0) {
-            throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
+            throw new RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
 
-        $this->versionDate = new \DateTime(trim($process->getOutput()));
-        $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
+        $this->versionDate = new DateTime(trim($process->getOutput()));
+        $this->versionDate->setTimezone(new DateTimeZone('UTC'));
 
         // TODO in v2.3 always call with an array
-        if (method_exists(\Symfony\Component\Process\Process::class, 'fromShellCommandline')) {
+        if (method_exists(Process::class, 'fromShellCommandline')) {
             $process = new Process(array('git', 'describe', '--tags', '--exact-match', 'HEAD'), __DIR__);
         } else {
             // @phpstan-ignore-next-line
@@ -83,8 +88,8 @@ class Compiler
             }
         }
 
-        $phar = new \Phar($pharFile, 0, 'composer.phar');
-        $phar->setSignatureAlgorithm(\Phar::SHA512);
+        $phar = new Phar($pharFile, 0, 'composer.phar');
+        $phar->setSignatureAlgorithm(Phar::SHA512);
 
         $phar->startBuffering();
 
@@ -107,8 +112,8 @@ class Compiler
             $this->addFile($phar, $file);
         }
         // Add runtime utilities separately to make sure they retains the docblocks as these will get copied into projects
-        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/Autoload/ClassLoader.php'), false);
-        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/InstalledVersions.php'), false);
+        $this->addFile($phar, new SplFileInfo(__DIR__ . '/Autoload/ClassLoader.php'), false);
+        $this->addFile($phar, new SplFileInfo(__DIR__ . '/InstalledVersions.php'), false);
 
         // Add Composer resources
         $finder = new Finder();
@@ -147,7 +152,7 @@ class Compiler
         ) as $file) {
             $extraFiles[$file] = realpath($file);
             if (!file_exists($file)) {
-                throw new \RuntimeException('Extra file listed is missing from the filesystem: '.$file);
+                throw new RuntimeException('Extra file listed is missing from the filesystem: '.$file);
             }
         }
         $unexpectedFiles = array();
@@ -167,10 +172,10 @@ class Compiler
         }
 
         if (count($extraFiles) > 0) {
-            throw new \RuntimeException('These files were expected but not added to the phar, they might be excluded or gone from the source package:'.PHP_EOL.var_export($extraFiles, true));
+            throw new RuntimeException('These files were expected but not added to the phar, they might be excluded or gone from the source package:'.PHP_EOL.var_export($extraFiles, true));
         }
         if (count($unexpectedFiles) > 0) {
-            throw new \RuntimeException('These files were unexpectedly added to the phar, make sure they are excluded or listed in $extraFiles:'.PHP_EOL.var_export($unexpectedFiles, true));
+            throw new RuntimeException('These files were unexpectedly added to the phar, make sure they are excluded or listed in $extraFiles:'.PHP_EOL.var_export($unexpectedFiles, true));
         }
 
         // Add bin/composer
@@ -184,14 +189,14 @@ class Compiler
         // disabled for interoperability with systems without gzip ext
         // $phar->compressFiles(\Phar::GZ);
 
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../LICENSE'), false);
+        $this->addFile($phar, new SplFileInfo(__DIR__.'/../../LICENSE'), false);
 
         unset($phar);
 
         // re-sign the phar with reproducible timestamp / signature
         $util = new Timestamps($pharFile);
         $util->updateTimestamps($this->versionDate);
-        $util->save($pharFile, \Phar::SHA512);
+        $util->save($pharFile, Phar::SHA512);
 
         Linter::lint($pharFile, [
             'vendor/symfony/console/Attribute/AsCommand.php',
@@ -204,7 +209,7 @@ class Compiler
     }
 
     /**
-     * @param  \SplFileInfo $file
+     * @param SplFileInfo $file
      * @return string
      */
     private function getRelativeFilePath($file)
@@ -223,7 +228,7 @@ class Compiler
      *
      * @return void
      */
-    private function addFile(\Phar $phar, \SplFileInfo $file, $strip = true)
+    private function addFile(Phar $phar, SplFileInfo $file, $strip = true)
     {
         $path = $this->getRelativeFilePath($file);
         $content = file_get_contents($file);
@@ -251,7 +256,7 @@ class Compiler
     /**
      * @return void
      */
-    private function addComposerBin(\Phar $phar)
+    private function addComposerBin(Phar $phar)
     {
         $content = file_get_contents(__DIR__.'/../../bin/composer');
         $content = Preg::replace('{^#!/usr/bin/env php\s*}', '', $content);

@@ -12,6 +12,11 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\Package\AliasPackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
@@ -154,7 +159,7 @@ class Transaction
                     if (isset($presentAliasMap[$aliasKey])) {
                         unset($removeAliasMap[$aliasKey]);
                     } else {
-                        $operations[] = new Operation\MarkAliasInstalledOperation($package);
+                        $operations[] = new MarkAliasInstalledOperation($package);
                     }
                 } else {
                     if (isset($presentPackageMap[$package->getName()])) {
@@ -166,11 +171,11 @@ class Transaction
                             $package->getDistReference() !== $presentPackageMap[$package->getName()]->getDistReference() ||
                             $package->getSourceReference() !== $presentPackageMap[$package->getName()]->getSourceReference()
                         ) {
-                            $operations[] = new Operation\UpdateOperation($source, $package);
+                            $operations[] = new UpdateOperation($source, $package);
                         }
                         unset($removeMap[$package->getName()]);
                     } else {
-                        $operations[] = new Operation\InstallOperation($package);
+                        $operations[] = new InstallOperation($package);
                         unset($removeMap[$package->getName()]);
                     }
                 }
@@ -178,10 +183,10 @@ class Transaction
         }
 
         foreach ($removeMap as $name => $package) {
-            array_unshift($operations, new Operation\UninstallOperation($package));
+            array_unshift($operations, new UninstallOperation($package));
         }
         foreach ($removeAliasMap as $nameVersion => $package) {
-            $operations[] = new Operation\MarkAliasUninstalledOperation($package);
+            $operations[] = new MarkAliasUninstalledOperation($package);
         }
 
         $operations = $this->movePluginsToFront($operations);
@@ -276,9 +281,9 @@ class Transaction
         $pluginRequires = array();
 
         foreach (array_reverse($operations, true) as $idx => $op) {
-            if ($op instanceof Operation\InstallOperation) {
+            if ($op instanceof InstallOperation) {
                 $package = $op->getPackage();
-            } elseif ($op instanceof Operation\UpdateOperation) {
+            } elseif ($op instanceof UpdateOperation) {
                 $package = $op->getTargetPackage();
             } else {
                 continue;
@@ -347,7 +352,7 @@ class Transaction
     {
         $uninstOps = array();
         foreach ($operations as $idx => $op) {
-            if ($op instanceof Operation\UninstallOperation || $op instanceof Operation\MarkAliasUninstalledOperation) {
+            if ($op instanceof UninstallOperation || $op instanceof MarkAliasUninstalledOperation) {
                 $uninstOps[] = $op;
                 unset($operations[$idx]);
             }

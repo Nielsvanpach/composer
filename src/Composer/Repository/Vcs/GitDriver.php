@@ -12,6 +12,10 @@
 
 namespace Composer\Repository\Vcs;
 
+use RuntimeException;
+use InvalidArgumentException;
+use DateTime;
+use DateTimeZone;
 use Composer\Pcre\Preg;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
@@ -43,13 +47,13 @@ class GitDriver extends VcsDriver
         if (Filesystem::isLocalPath($this->url)) {
             $this->url = Preg::replace('{[\\/]\.git/?$}', '', $this->url);
             if (!is_dir($this->url)) {
-                throw new \RuntimeException('Failed to read package information from '.$this->url.' as the path does not exist');
+                throw new RuntimeException('Failed to read package information from '.$this->url.' as the path does not exist');
             }
             $this->repoDir = $this->url;
             $cacheUrl = realpath($this->url);
         } else {
             if (!Cache::isUsable((string) $this->config->get('cache-vcs-dir'))) {
-                throw new \RuntimeException('GitDriver requires a usable cache directory, and it looks like you set it to be disabled');
+                throw new RuntimeException('GitDriver requires a usable cache directory, and it looks like you set it to be disabled');
             }
 
             $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . Preg::replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
@@ -60,17 +64,17 @@ class GitDriver extends VcsDriver
             $fs->ensureDirectoryExists(dirname($this->repoDir));
 
             if (!is_writable(dirname($this->repoDir))) {
-                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.dirname($this->repoDir).'" directory is not writable by the current user.');
+                throw new RuntimeException('Can not clone '.$this->url.' to access package information. The "'.dirname($this->repoDir).'" directory is not writable by the current user.');
             }
 
             if (Preg::isMatch('{^ssh://[^@]+@[^:]+:[^0-9]+}', $this->url)) {
-                throw new \InvalidArgumentException('The source URL '.$this->url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
+                throw new InvalidArgumentException('The source URL '.$this->url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
             }
 
             $gitUtil = new GitUtil($this->io, $this->config, $this->process, $fs);
             if (!$gitUtil->syncMirror($this->url, $this->repoDir)) {
                 if (!is_dir($this->repoDir)) {
-                    throw new \RuntimeException('Failed to clone '.$this->url.' to read package information from it');
+                    throw new RuntimeException('Failed to clone '.$this->url.' to read package information from it');
                 }
                 $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated</error>');
             }
@@ -158,7 +162,7 @@ class GitDriver extends VcsDriver
             ProcessExecutor::escape($identifier)
         ), $output, $this->repoDir);
 
-        return new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
+        return new DateTime('@'.trim($output), new DateTimeZone('UTC'));
     }
 
     /**
@@ -237,7 +241,7 @@ class GitDriver extends VcsDriver
             $gitUtil->runCommand(function ($url) {
                 return 'git ls-remote --heads -- ' . ProcessExecutor::escape($url);
             }, $url, sys_get_temp_dir());
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return false;
         }
 

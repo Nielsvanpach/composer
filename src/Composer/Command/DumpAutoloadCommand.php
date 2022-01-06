@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use InvalidArgumentException;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -89,7 +90,7 @@ EOT
         }
         if ($input->getOption('dev')) {
             if ($input->getOption('no-dev')) {
-                throw new \InvalidArgumentException('You can not use both --no-dev and --dev as they conflict with each other.');
+                throw new InvalidArgumentException('You can not use both --no-dev and --dev as they conflict with each other.');
             }
             $generator->setDevMode(true);
         }

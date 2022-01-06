@@ -12,6 +12,7 @@
 
 namespace Composer\IO;
 
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Composer\Question\StrictConfirmationQuestion;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -268,7 +269,7 @@ class ConsoleIO extends BaseIO
      */
     public function ask($question, $default = null)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        /** @var QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
         $question = new Question($question, $default);
 
@@ -280,7 +281,7 @@ class ConsoleIO extends BaseIO
      */
     public function askConfirmation($question, $default = true)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        /** @var QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
         $question = new StrictConfirmationQuestion($question, $default);
 
@@ -292,7 +293,7 @@ class ConsoleIO extends BaseIO
      */
     public function askAndValidate($question, $validator, $attempts = null, $default = null)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        /** @var QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
         $question = new Question($question, $default);
         $question->setValidator($validator);
@@ -306,7 +307,7 @@ class ConsoleIO extends BaseIO
      */
     public function askAndHideAnswer($question)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        /** @var QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
         $question = new Question($question);
         $question->setHidden(true);
@@ -319,7 +320,7 @@ class ConsoleIO extends BaseIO
      */
     public function select($question, $choices, $default, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        /** @var QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
         $question = new ChoiceQuestion($question, $choices, $default);
         $question->setMaxAttempts($attempts ?: null); // IOInterface requires false, and Question requires null or int

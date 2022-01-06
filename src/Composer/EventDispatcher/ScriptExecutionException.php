@@ -12,9 +12,10 @@
 
 namespace Composer\EventDispatcher;
 
+use RuntimeException;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ScriptExecutionException extends \RuntimeException
+class ScriptExecutionException extends RuntimeException
 {
 }

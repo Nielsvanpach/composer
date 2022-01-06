@@ -12,6 +12,8 @@
 
 namespace Composer\Package\Archiver;
 
+use SplFileInfo;
+use RuntimeException;
 use ZipArchive;
 use Composer\Util\Filesystem;
 
@@ -38,7 +40,7 @@ class ZipArchiver implements ArchiverInterface
         if ($res === true) {
             $files = new ArchivableFilesFinder($sources, $excludes, $ignoreFilters);
             foreach ($files as $file) {
-                /** @var \SplFileInfo $file */
+                /** @var SplFileInfo $file */
                 $filepath = strtr($file->getPath()."/".$file->getFilename(), '\\', '/');
                 $localname = $filepath;
                 if (strpos($localname, $sources . '/') === 0) {
@@ -73,7 +75,7 @@ class ZipArchiver implements ArchiverInterface
             $sources,
             $zip->getStatusString()
         );
-        throw new \RuntimeException($message);
+        throw new RuntimeException($message);
     }
 
     /**
